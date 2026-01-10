@@ -35,7 +35,6 @@ export async function GET(
       });
     } else {
       // Fetch received email content using emails.receiving.get()
-      // @ts-expect-error - Resend SDK types may not include receiving API
       const { data, error } = await resend.emails.receiving.get(id);
 
       if (error) {
