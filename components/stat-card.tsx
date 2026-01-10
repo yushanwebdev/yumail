@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { LucideIcon } from "lucide-react";
+import { ReactNode } from "react";
 
 interface StatCardProps {
   href?: string;
   icon: LucideIcon;
   iconStyle?: "filled" | "outlined";
   title: string;
-  value: string;
+  value: ReactNode;
 }
 
 export function StatCard({
