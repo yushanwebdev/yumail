@@ -10,13 +10,16 @@ import {
   ChevronRight,
   Search,
   Calendar,
-  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { getInitials, getDisplayName } from "@/lib/utils";
+import { LoadingSpinner } from "@/components/loading-spinner";
+import { StatCard } from "@/components/stat-card";
+import { SectionHeader } from "@/components/section-header";
+import { EmptyState } from "@/components/empty-state";
 
 export default function Dashboard() {
   const stats = useQuery(api.emails.getStats);
@@ -29,11 +32,7 @@ export default function Dashboard() {
     senderBreakdown === undefined ||
     unreadEmails === undefined
   ) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-white dark:bg-zinc-950">
-        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   const displayEmails = unreadEmails.slice(0, 5);
@@ -94,82 +93,41 @@ export default function Dashboard() {
 
         {/* Quick Access Cards */}
         <div className="mb-10 grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Link href="/received" className="group block">
-            <div className="rounded-xl border border-zinc-200 p-4 transition-[background-color,border-color] duration-300 ease-[cubic-bezier(0.215,0.61,0.355,1)] group-hover:border-zinc-900 group-hover:bg-zinc-900 dark:border-zinc-800 dark:group-hover:border-zinc-100 dark:group-hover:bg-zinc-100">
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900 transition-[background-color,border-color] duration-300 ease-[cubic-bezier(0.215,0.61,0.355,1)] group-hover:bg-white dark:bg-zinc-100 dark:group-hover:bg-zinc-900">
-                <Inbox className="h-5 w-5 text-white transition-[color] duration-300 ease-[cubic-bezier(0.215,0.61,0.355,1)] group-hover:text-zinc-900 dark:text-zinc-900 dark:group-hover:text-white" />
-              </div>
-              <div className="font-medium text-zinc-900 transition-[color] duration-300 ease-[cubic-bezier(0.215,0.61,0.355,1)] group-hover:text-white dark:text-zinc-50 dark:group-hover:text-zinc-900">
-                Inbox
-              </div>
-              <div className="text-sm text-zinc-500 transition-[color] duration-300 ease-[cubic-bezier(0.215,0.61,0.355,1)] group-hover:text-zinc-300 dark:text-zinc-400 dark:group-hover:text-zinc-600">
-                {stats.totalInbox} emails
-              </div>
-            </div>
-          </Link>
-
-          <Link href="/sent" className="group block">
-            <div className="rounded-xl border border-zinc-200 p-4 transition-[background-color,border-color] duration-300 ease-[cubic-bezier(0.215,0.61,0.355,1)] group-hover:border-zinc-900 group-hover:bg-zinc-900 dark:border-zinc-800 dark:group-hover:border-zinc-100 dark:group-hover:bg-zinc-100">
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-200 transition-[background-color,border-color] duration-300 ease-[cubic-bezier(0.215,0.61,0.355,1)] group-hover:border-zinc-700 group-hover:bg-white dark:border-zinc-700 dark:group-hover:border-zinc-300 dark:group-hover:bg-zinc-900">
-                <Send className="h-5 w-5 text-zinc-600 transition-[color] duration-300 ease-[cubic-bezier(0.215,0.61,0.355,1)] group-hover:text-zinc-900 dark:text-zinc-400 dark:group-hover:text-white" />
-              </div>
-              <div className="font-medium text-zinc-900 transition-[color] duration-300 ease-[cubic-bezier(0.215,0.61,0.355,1)] group-hover:text-white dark:text-zinc-50 dark:group-hover:text-zinc-900">
-                Sent
-              </div>
-              <div className="text-sm text-zinc-500 transition-[color] duration-300 ease-[cubic-bezier(0.215,0.61,0.355,1)] group-hover:text-zinc-300 dark:text-zinc-400 dark:group-hover:text-zinc-600">
-                {stats.totalSent} sent
-              </div>
-            </div>
-          </Link>
-
-          <div className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-200 dark:border-zinc-700">
-              <MailOpen className="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
-            </div>
-            <div className="font-medium text-zinc-900 dark:text-zinc-50">
-              Unread
-            </div>
-            <div className="text-sm text-zinc-500 dark:text-zinc-400">
-              {stats.unreadCount} new
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-200 dark:border-zinc-700">
-              <CalendarDays className="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
-            </div>
-            <div className="font-medium text-zinc-900 dark:text-zinc-50">
-              Today
-            </div>
-            <div className="text-sm text-zinc-500 dark:text-zinc-400">
-              {stats.todayCount} received
-            </div>
-          </div>
+          <StatCard
+            href="/received"
+            icon={Inbox}
+            iconStyle="filled"
+            title="Inbox"
+            value={`${stats.totalInbox} emails`}
+          />
+          <StatCard
+            href="/sent"
+            icon={Send}
+            iconStyle="outlined"
+            title="Sent"
+            value={`${stats.totalSent} sent`}
+          />
+          <StatCard
+            icon={MailOpen}
+            iconStyle="outlined"
+            title="Unread"
+            value={`${stats.unreadCount} new`}
+          />
+          <StatCard
+            icon={CalendarDays}
+            iconStyle="outlined"
+            title="Today"
+            value={`${stats.todayCount} received`}
+          />
         </div>
 
         {/* Recent Unread Section */}
         <div className="mb-10">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-              Recent Unread
-            </h2>
-            <Link
-              href="/received"
-              className="flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
-            >
-              View all
-              <ChevronRight className="h-4 w-4" />
-            </Link>
-          </div>
+          <SectionHeader title="Recent Unread" viewAllHref="/received" />
 
           {displayEmails.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-xl border border-zinc-200 py-12 dark:border-zinc-800">
-              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
-                <Mail className="h-6 w-6 text-zinc-400" />
-              </div>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                No unread emails
-              </p>
+            <div className="rounded-xl border border-zinc-200 dark:border-zinc-800">
+              <EmptyState icon={Mail} title="No unread emails" />
             </div>
           ) : (
             <div className="divide-y divide-zinc-100 overflow-hidden rounded-xl border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
@@ -221,9 +179,7 @@ export default function Dashboard() {
         {/* Top Senders Section */}
         {senderBreakdown.length > 0 && (
           <div>
-            <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-              Top Senders
-            </h2>
+            <SectionHeader title="Top Senders" />
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
               {senderBreakdown.map((sender) => (
                 <div
