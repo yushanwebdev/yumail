@@ -7,7 +7,6 @@ import {
   Send,
   MailOpen,
   CalendarDays,
-  ChevronRight,
   Search,
   Calendar,
 } from "lucide-react";
@@ -67,40 +66,12 @@ export default function Dashboard() {
             >
               <Calendar className="h-5 w-5" />
             </Button>
+            <Link href="/compose">
+              <Button className="ml-2 h-9 rounded-full bg-zinc-900 px-4 text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200">
+                Compose
+              </Button>
+            </Link>
           </div>
-        </div>
-
-        {/* Hero Section */}
-        <div className="mb-10 text-center">
-          <Link
-            href="/received"
-            className="mb-4 inline-flex items-center gap-1 text-sm text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-          >
-            Unread emails
-            <ChevronRight className="h-4 w-4" />
-          </Link>
-
-          <div className="mb-3 flex items-center justify-center">
-            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500">
-              <span className="text-5xl font-bold tabular-nums text-white">
-                {stats.unreadCount}
-              </span>
-            </div>
-          </div>
-
-          <p className="mb-6 text-sm text-zinc-500 dark:text-zinc-400">
-            {stats.unreadCount === 0
-              ? "You're all caught up!"
-              : stats.unreadCount === 1
-                ? "email waiting for you"
-                : "emails waiting for you"}
-          </p>
-
-          <Link href="/compose">
-            <Button className="rounded-full bg-zinc-900 px-6 text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200">
-              Compose email
-            </Button>
-          </Link>
         </div>
 
         {/* Quick Access Cards */}
