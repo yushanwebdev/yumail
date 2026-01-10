@@ -6,6 +6,8 @@ A modern, real-time email client built with Next.js and Convex. Send and receive
 ![Convex](https://img.shields.io/badge/Convex-1.31-red)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
 
+![YuMail Dashboard](dashboard.png)
+
 ## Features
 
 - **Real-time inbox** - Emails appear instantly via Convex subscriptions
