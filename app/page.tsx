@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { getInitials } from "@/lib/utils";
+import { getInitials, getDisplayName } from "@/lib/utils";
 
 export default function Dashboard() {
   const stats = useQuery(api.emails.getStats);
@@ -86,7 +86,7 @@ export default function Dashboard() {
               : `waiting in your inbox`}
           </p>
           <Link href="/compose">
-            <Button className="rounded-full bg-pink-100 px-6 text-pink-900 hover:bg-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:hover:bg-pink-900/50">
+            <Button className="rounded-full bg-zinc-900 px-6 text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200">
               Compose email
             </Button>
           </Link>
@@ -94,29 +94,29 @@ export default function Dashboard() {
 
         {/* Quick Access Cards */}
         <div className="mb-10 grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Link href="/received" className="block">
-            <div className="rounded-xl border border-zinc-200 p-4 transition-colors hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:border-zinc-700 dark:hover:bg-zinc-900">
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900 dark:bg-zinc-100">
-                <Inbox className="h-5 w-5 text-white dark:text-zinc-900" />
+          <Link href="/received" className="group block">
+            <div className="rounded-xl border border-zinc-200 p-4 transition-[background-color,border-color] duration-300 ease-[cubic-bezier(0.215,0.61,0.355,1)] group-hover:border-zinc-900 group-hover:bg-zinc-900 dark:border-zinc-800 dark:group-hover:border-zinc-100 dark:group-hover:bg-zinc-100">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900 transition-[background-color,border-color] duration-300 ease-[cubic-bezier(0.215,0.61,0.355,1)] group-hover:bg-white dark:bg-zinc-100 dark:group-hover:bg-zinc-900">
+                <Inbox className="h-5 w-5 text-white transition-[color] duration-300 ease-[cubic-bezier(0.215,0.61,0.355,1)] group-hover:text-zinc-900 dark:text-zinc-900 dark:group-hover:text-white" />
               </div>
-              <div className="font-medium text-zinc-900 dark:text-zinc-50">
+              <div className="font-medium text-zinc-900 transition-[color] duration-300 ease-[cubic-bezier(0.215,0.61,0.355,1)] group-hover:text-white dark:text-zinc-50 dark:group-hover:text-zinc-900">
                 Inbox
               </div>
-              <div className="text-sm text-zinc-500 dark:text-zinc-400">
+              <div className="text-sm text-zinc-500 transition-[color] duration-300 ease-[cubic-bezier(0.215,0.61,0.355,1)] group-hover:text-zinc-300 dark:text-zinc-400 dark:group-hover:text-zinc-600">
                 {stats.totalInbox} emails
               </div>
             </div>
           </Link>
 
-          <Link href="/sent" className="block">
-            <div className="rounded-xl border border-zinc-200 p-4 transition-colors hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:border-zinc-700 dark:hover:bg-zinc-900">
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-200 dark:border-zinc-700">
-                <Send className="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
+          <Link href="/sent" className="group block">
+            <div className="rounded-xl border border-zinc-200 p-4 transition-[background-color,border-color] duration-300 ease-[cubic-bezier(0.215,0.61,0.355,1)] group-hover:border-zinc-900 group-hover:bg-zinc-900 dark:border-zinc-800 dark:group-hover:border-zinc-100 dark:group-hover:bg-zinc-100">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-200 transition-[background-color,border-color] duration-300 ease-[cubic-bezier(0.215,0.61,0.355,1)] group-hover:border-zinc-700 group-hover:bg-white dark:border-zinc-700 dark:group-hover:border-zinc-300 dark:group-hover:bg-zinc-900">
+                <Send className="h-5 w-5 text-zinc-600 transition-[color] duration-300 ease-[cubic-bezier(0.215,0.61,0.355,1)] group-hover:text-zinc-900 dark:text-zinc-400 dark:group-hover:text-white" />
               </div>
-              <div className="font-medium text-zinc-900 dark:text-zinc-50">
+              <div className="font-medium text-zinc-900 transition-[color] duration-300 ease-[cubic-bezier(0.215,0.61,0.355,1)] group-hover:text-white dark:text-zinc-50 dark:group-hover:text-zinc-900">
                 Sent
               </div>
-              <div className="text-sm text-zinc-500 dark:text-zinc-400">
+              <div className="text-sm text-zinc-500 transition-[color] duration-300 ease-[cubic-bezier(0.215,0.61,0.355,1)] group-hover:text-zinc-300 dark:text-zinc-400 dark:group-hover:text-zinc-600">
                 {stats.totalSent} sent
               </div>
             </div>
@@ -172,47 +172,46 @@ export default function Dashboard() {
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-zinc-100 rounded-xl border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+            <div className="divide-y divide-zinc-100 overflow-hidden rounded-xl border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
               {displayEmails.map((email) => {
                 const { month, day } = formatDate(email.timestamp);
                 return (
-                  <div
-                    key={email._id}
-                    className="group flex items-center gap-4 p-4 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900"
-                  >
-                    <Avatar className="h-10 w-10 shrink-0">
-                      <AvatarFallback className="bg-zinc-900 text-xs font-medium text-white dark:bg-zinc-100 dark:text-zinc-900">
-                        {getInitials(email.from.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex shrink-0 flex-col items-center text-center">
-                      <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
-                        {month}
-                      </span>
-                      <span className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-                        {day}
-                      </span>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="font-medium text-zinc-900 dark:text-zinc-50">
-                        {email.from.name}
+                  <Link key={email._id} href={`/received/${email._id}`}>
+                    <div className="group flex cursor-pointer items-center gap-4 p-4 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900">
+                      <Avatar className="h-10 w-10 shrink-0 self-center">
+                        <AvatarFallback className="bg-zinc-900 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900">
+                          {getInitials(getDisplayName(email.from.name, email.from.email))}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex h-10 shrink-0 flex-col items-center justify-center text-center">
+                        <span className="text-xs font-medium leading-none text-blue-600 dark:text-blue-400">
+                          {month}
+                        </span>
+                        <span className="text-lg font-semibold leading-tight text-zinc-900 dark:text-zinc-50">
+                          {day}
+                        </span>
                       </div>
-                      <div className="truncate text-sm text-zinc-500 dark:text-zinc-400">
-                        {email.subject}
+                      <div className="min-w-0 flex-1 self-center">
+                        <div className="font-medium leading-snug text-zinc-900 dark:text-zinc-50">
+                          {getDisplayName(email.from.name, email.from.email)}
+                        </div>
+                        <div className="truncate text-sm leading-snug text-zinc-500 dark:text-zinc-400">
+                          {email.subject}
+                        </div>
                       </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="shrink-0 self-center opacity-0 transition-opacity group-hover:opacity-100"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          markAsRead({ id: email._id });
+                        }}
+                      >
+                        Mark read
+                      </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        markAsRead({ id: email._id });
-                      }}
-                    >
-                      Mark read
-                    </Button>
-                  </div>
+                  </Link>
                 );
               })}
             </div>
@@ -233,11 +232,11 @@ export default function Dashboard() {
                 >
                   <Avatar className="mb-2 h-12 w-12">
                     <AvatarFallback className="bg-zinc-100 text-sm font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-                      {getInitials(sender.name)}
+                      {getInitials(getDisplayName(sender.name, sender.email))}
                     </AvatarFallback>
                   </Avatar>
                   <div className="w-full truncate text-center text-sm font-medium text-zinc-900 dark:text-zinc-50">
-                    {sender.name}
+                    {getDisplayName(sender.name, sender.email)}
                   </div>
                   <div className="text-xs text-zinc-500 dark:text-zinc-400">
                     {sender.count} {sender.count === 1 ? "email" : "emails"}

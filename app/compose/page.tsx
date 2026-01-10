@@ -84,7 +84,7 @@ export default function ComposePage() {
               </Button>
               <Button
                 size="sm"
-                className="gap-2 bg-pink-100 text-pink-900 hover:bg-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:hover:bg-pink-900/50"
+                className="gap-2 bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
                 onClick={handleSend}
                 disabled={!isValid || isSending}
               >

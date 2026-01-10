@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { formatRelativeTime, getInitials, cn } from "@/lib/utils";
+import { formatRelativeTime, getInitials, getDisplayName, cn } from "@/lib/utils";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Doc, Id } from "@/convex/_generated/dataModel";
@@ -73,8 +73,8 @@ export function EmailList({ emails, showSender = true }: EmailListProps) {
               )}
             >
               <Avatar className="h-10 w-10 shrink-0">
-                <AvatarFallback className="bg-zinc-100 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-                  {getInitials(displayPerson.name)}
+                <AvatarFallback className="bg-zinc-100 text-sm font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+                  {getInitials(getDisplayName(displayPerson.name, displayPerson.email))}
                 </AvatarFallback>
               </Avatar>
 
@@ -91,7 +91,7 @@ export function EmailList({ emails, showSender = true }: EmailListProps) {
                         : "font-medium text-zinc-700 dark:text-zinc-300"
                     )}
                   >
-                    {displayPerson.name}
+                    {getDisplayName(displayPerson.name, displayPerson.email)}
                   </span>
                   <span className="shrink-0 text-xs text-zinc-500">
                     {formatRelativeTime(new Date(email.timestamp))}

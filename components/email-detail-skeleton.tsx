@@ -1,35 +1,46 @@
-import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, Inbox, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface EmailDetailSkeletonProps {
-  backLabel: string;
+  backLabel?: string;
   backPath: string;
+  folder?: "inbox" | "sent";
 }
 
 export function EmailDetailSkeleton({
-  backLabel,
+  backLabel = "Back",
   backPath,
+  folder = "inbox",
 }: EmailDetailSkeletonProps) {
+  const Icon = folder === "inbox" ? Inbox : Send;
+
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-white dark:bg-zinc-950">
+      <div className="mx-auto max-w-3xl px-4 py-6">
         {/* Header */}
         <div className="mb-6">
-          <Button variant="ghost" size="sm" className="mb-4 gap-2" asChild>
-            <a href={backPath}>
+          <Link href={backPath}>
+            <Button variant="ghost" size="sm" className="mb-4 gap-2">
               <ArrowLeft className="h-4 w-4" />
               {backLabel}
-            </a>
-          </Button>
+            </Button>
+          </Link>
+
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900 dark:bg-zinc-100">
+              <Icon className="h-5 w-5 text-white dark:text-zinc-900" />
+            </div>
+            <div className="flex-1">
+              <Skeleton className="mb-2 h-6 w-3/4" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+          </div>
         </div>
 
         {/* Email Content Skeleton */}
-        <Card className="overflow-hidden border-zinc-200 p-6 dark:border-zinc-800">
-          {/* Subject Skeleton */}
-          <Skeleton className="mb-6 h-8 w-3/4" />
-
+        <div className="rounded-xl border border-zinc-200 p-6 dark:border-zinc-800">
           {/* Sender Info Skeleton */}
           <div className="mb-6 flex items-start gap-3">
             <Skeleton className="h-10 w-10 rounded-full" />
@@ -39,14 +50,13 @@ export function EmailDetailSkeleton({
                   <Skeleton className="h-5 w-32" />
                   <Skeleton className="h-4 w-48" />
                 </div>
-                <Skeleton className="h-4 w-36" />
               </div>
               <Skeleton className="mt-2 h-4 w-56" />
             </div>
           </div>
 
           {/* Email Body Skeleton */}
-          <div className="mb-6 rounded-lg border border-zinc-100 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="mb-6 rounded-lg border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900">
             <div className="space-y-3">
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-full" />
@@ -66,7 +76,16 @@ export function EmailDetailSkeleton({
             <Skeleton className="h-9 w-28" />
             <Skeleton className="h-9 w-20" />
           </div>
-        </Card>
+        </div>
+      </div>
+
+      {/* Floating Compose Button */}
+      <div className="fixed bottom-6 right-6">
+        <Link href="/compose">
+          <Button className="h-12 gap-2 rounded-full bg-zinc-900 px-5 text-white shadow-lg hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200">
+            Compose
+          </Button>
+        </Link>
       </div>
     </div>
   );
