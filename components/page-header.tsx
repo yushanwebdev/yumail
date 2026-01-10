@@ -9,7 +9,7 @@ interface PageHeaderProps {
   icon?: LucideIcon;
   title: string;
   titleSize?: "default" | "small";
-  subtitle?: string;
+  subtitle?: ReactNode;
   badge?: ReactNode;
 }
 
