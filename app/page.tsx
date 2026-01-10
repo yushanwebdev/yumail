@@ -15,7 +15,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { getInitials, getDisplayName } from "@/lib/utils";
-import { LoadingSpinner } from "@/components/loading-spinner";
+import { DashboardSkeleton } from "@/components/dashboard-skeleton";
 import { StatCard } from "@/components/stat-card";
 import { SectionHeader } from "@/components/section-header";
 import { EmptyState } from "@/components/empty-state";
@@ -31,7 +31,7 @@ export default function Dashboard() {
     senderBreakdown === undefined ||
     unreadEmails === undefined
   ) {
-    return <LoadingSpinner />;
+    return <DashboardSkeleton />;
   }
 
   const displayEmails = unreadEmails.slice(0, 5);

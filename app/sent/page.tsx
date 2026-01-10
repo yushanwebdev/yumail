@@ -6,7 +6,7 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { PageLayout } from "@/components/page-layout";
 import { PageHeader } from "@/components/page-header";
-import { LoadingSpinner } from "@/components/loading-spinner";
+import { EmailListSkeleton } from "@/components/email-list-skeleton";
 import { FloatingComposeButton } from "@/components/floating-compose-button";
 
 export default function SentPage() {
@@ -14,7 +14,7 @@ export default function SentPage() {
   const stats = useQuery(api.emails.getStats);
 
   if (emails === undefined || stats === undefined) {
-    return <LoadingSpinner />;
+    return <EmailListSkeleton />;
   }
 
   return (
