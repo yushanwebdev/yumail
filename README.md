@@ -1,36 +1,120 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# YuMail
+
+A modern, real-time email client built with Next.js and Convex. Send and receive emails with a clean, responsive interface.
+
+![Next.js](https://img.shields.io/badge/Next.js-16-black)
+![Convex](https://img.shields.io/badge/Convex-1.31-red)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
+
+## Features
+
+- **Real-time inbox** - Emails appear instantly via Convex subscriptions
+- **Send & receive** - Full email functionality powered by Resend
+- **Dashboard** - Stats overview with unread count, top senders, and quick actions
+- **Modern UI** - Built with shadcn/ui components and smooth animations
+
+## Tech Stack
+
+- **Frontend:** Next.js 16 (App Router), React 19, Tailwind CSS v4
+- **Backend:** Convex (real-time database & functions)
+- **Email:** Resend (transactional email API)
+- **UI:** shadcn/ui, Lucide icons, Motion animations
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- [Bun](https://bun.sh/) (recommended) or Node.js 18+
+- [Convex account](https://convex.dev/)
+- [Resend account](https://resend.com/) with a verified domain
+
+### Installation
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/yushanwebdev/yumail.git
+   cd yumail
+   ```
+
+2. Install dependencies:
+
+   ```bash
+   bun install
+   ```
+
+3. Set up environment variables:
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+   Fill in the required values:
+
+   ```
+   NEXT_PUBLIC_CONVEX_URL=your_convex_url
+   CONVEX_DEPLOYMENT=your_deployment
+   RESEND_API_KEY=your_resend_api_key
+   RESEND_WEBHOOK_EMAIL_RECEIVED_SECRET=your_webhook_secret
+   ```
+
+4. Start Convex development server:
+
+   ```bash
+   npx convex dev
+   ```
+
+5. In a new terminal, start the Next.js dev server:
+
+   ```bash
+   bun run dev
+   ```
+
+6. Open [http://localhost:3000](http://localhost:3000)
+
+### Webhook Setup
+
+To receive emails, configure a Resend webhook pointing to:
+
+```
+https://your-convex-deployment.convex.site/webhooks/resend/email-received
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Project Structure
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+/app
+  /api/email          # API routes for sending emails & fetching content
+  /compose            # Email composition page
+  /received           # Inbox view
+  /sent               # Sent emails view
+  page.tsx            # Dashboard
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+/convex
+  schema.ts           # Database schema
+  emails.ts           # Queries & mutations
+  http.ts             # Webhook handler
 
-## Learn More
+/components
+  /ui                 # shadcn/ui components
+  email-list.tsx      # Reusable email list component
 
-To learn more about Next.js, take a look at the following resources:
+/lib
+  convex.tsx          # Convex provider setup
+  types.ts            # TypeScript interfaces
+  utils.ts            # Helper functions
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Available Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Command          | Description              |
+| ---------------- | ------------------------ |
+| `bun run dev`    | Start development server |
+| `bun run build`  | Build for production     |
+| `bun run start`  | Start production server  |
+| `bun run lint`   | Run ESLint               |
+| `npx convex dev` | Start Convex dev server  |
 
-## Deploy on Vercel
+## License
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
