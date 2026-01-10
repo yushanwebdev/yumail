@@ -46,7 +46,7 @@ export function PageHeader({
             >
               {title}
             </h1>
-            {subtitle && <p className="text-sm text-zinc-500">{subtitle}</p>}
+            {subtitle && <div className="text-sm text-zinc-500">{subtitle}</div>}
           </div>
         </div>
 
