@@ -1,11 +1,10 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Send } from "lucide-react";
 import { fetchQuery } from "convex/nextjs";
 import { Resend } from "resend";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -64,26 +63,35 @@ export default async function SentEmailDetailPage({
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Header - renders immediately */}
+    <div className="min-h-screen bg-white dark:bg-zinc-950">
+      <div className="mx-auto max-w-3xl px-4 py-6">
+        {/* Header */}
         <div className="mb-6">
           <Link href="/sent">
             <Button variant="ghost" size="sm" className="mb-4 gap-2">
               <ArrowLeft className="h-4 w-4" />
-              Back to Sent
+              Back
             </Button>
           </Link>
+
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900 dark:bg-zinc-100">
+              <Send className="h-5 w-5 text-white dark:text-zinc-900" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">
+                {email.subject}
+              </h1>
+              <p className="text-sm text-zinc-500">
+                {new Date(email.timestamp).toLocaleString()}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Email Content */}
-        <Card className="overflow-hidden border-zinc-200 p-6 dark:border-zinc-800">
-          {/* Subject - renders immediately */}
-          <h1 className="mb-6 text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-            {email.subject}
-          </h1>
-
-          {/* Recipient Info - renders immediately */}
+        <div className="rounded-xl border border-zinc-200 p-6 dark:border-zinc-800">
+          {/* Recipient Info */}
           <div className="mb-6 flex items-start gap-3">
             <Avatar className="h-10 w-10">
               <AvatarFallback className="bg-zinc-100 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
@@ -98,9 +106,6 @@ export default async function SentEmailDetailPage({
                   </p>
                   <p className="text-sm text-zinc-500">{email.to[0].email}</p>
                 </div>
-                <span className="text-sm text-zinc-500">
-                  {new Date(email.timestamp).toLocaleString()}
-                </span>
               </div>
               {email.to.length > 1 && (
                 <p className="mt-1 text-sm text-zinc-500">
@@ -120,21 +125,30 @@ export default async function SentEmailDetailPage({
             </div>
           </div>
 
-          {/* Email Body - streams in progressively */}
-          <div className="mb-6 rounded-lg border border-zinc-100 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+          {/* Email Body */}
+          <div className="mb-6 rounded-lg border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900">
             <Suspense fallback={<EmailContentSkeleton />}>
               <EmailContent resendId={email.resendId} />
             </Suspense>
           </div>
 
-          {/* Actions - renders immediately */}
+          {/* Actions */}
           <EmailDetailActions
             emailId={email._id}
             isRead={email.isRead}
             folder="sent"
             backPath="/sent"
           />
-        </Card>
+        </div>
+      </div>
+
+      {/* Floating Compose Button */}
+      <div className="fixed bottom-6 right-6">
+        <Link href="/compose">
+          <Button className="h-12 gap-2 rounded-full bg-pink-100 px-5 text-pink-900 shadow-lg hover:bg-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:hover:bg-pink-900/50">
+            Compose
+          </Button>
+        </Link>
       </div>
     </div>
   );
