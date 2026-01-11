@@ -1,13 +1,17 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { Preloaded, usePreloadedQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Badge } from "@/components/badge";
 
-export function InboxBadge() {
-  const stats = useQuery(api.emails.getStats);
+export function InboxBadge({
+  preloadedStats,
+}: {
+  preloadedStats: Preloaded<typeof api.emails.getStats>;
+}) {
+  const stats = usePreloadedQuery(preloadedStats);
 
-  if (stats === undefined || stats.unreadCount === 0) {
+  if (stats.unreadCount === 0) {
     return null;
   }
 
