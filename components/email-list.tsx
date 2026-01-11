@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { motion, AnimatePresence } from "motion/react";
 import {
   Mail,
   MailOpen,
@@ -10,7 +9,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { formatRelativeTime, getInitials, cn } from "@/lib/utils";
+import { formatRelativeTime, getInitials, getDisplayName, cn } from "@/lib/utils";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Doc, Id } from "@/convex/_generated/dataModel";
@@ -57,111 +56,101 @@ export function EmailList({ emails, showSender = true }: EmailListProps) {
 
   return (
     <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
-      <AnimatePresence initial={false}>
-        {emails.map((email, index) => {
-          const displayPerson = showSender ? email.from : email.to[0];
-          const detailPath = email.folder === "inbox"
-            ? `/received/${email._id}`
-            : `/sent/${email._id}`;
+      {emails.map((email) => {
+        const displayPerson = showSender ? email.from : email.to[0];
+        const detailPath = email.folder === "inbox"
+          ? `/received/${email._id}`
+          : `/sent/${email._id}`;
 
-          return (
-            <motion.div
-              key={email._id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, x: -100 }}
-              transition={{ delay: index * 0.03 }}
+        return (
+          <Link key={email._id} href={detailPath}>
+            <div
+              className={cn(
+                "group flex cursor-pointer items-start gap-4 px-4 py-4 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/50",
+                !email.isRead &&
+                  email.folder === "inbox" &&
+                  "bg-blue-50/50 dark:bg-blue-950/20"
+              )}
             >
-              <Link href={detailPath}>
-                <div
+              <Avatar className="h-10 w-10 shrink-0">
+                <AvatarFallback className="bg-zinc-900 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900">
+                  {getInitials(getDisplayName(displayPerson.name, displayPerson.email))}
+                </AvatarFallback>
+              </Avatar>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  {!email.isRead && email.folder === "inbox" && (
+                    <Circle className="h-2 w-2 shrink-0 fill-blue-500 text-blue-500" />
+                  )}
+                  <span
+                    className={cn(
+                      "truncate",
+                      !email.isRead && email.folder === "inbox"
+                        ? "font-semibold text-zinc-900 dark:text-zinc-50"
+                        : "font-medium text-zinc-700 dark:text-zinc-300"
+                    )}
+                  >
+                    {getDisplayName(displayPerson.name, displayPerson.email)}
+                  </span>
+                  <span className="shrink-0 text-xs text-zinc-500">
+                    {formatRelativeTime(new Date(email.timestamp))}
+                  </span>
+                </div>
+                <p
                   className={cn(
-                    "group flex cursor-pointer items-start gap-4 px-4 py-4 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/50",
-                    !email.isRead &&
-                      email.folder === "inbox" &&
-                      "bg-blue-50/50 dark:bg-blue-950/20"
+                    "truncate text-sm",
+                    !email.isRead && email.folder === "inbox"
+                      ? "font-medium text-zinc-900 dark:text-zinc-50"
+                      : "text-zinc-700 dark:text-zinc-300"
                   )}
                 >
-                  <Avatar className="h-10 w-10 shrink-0">
-                    <AvatarFallback className="bg-zinc-100 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-                      {getInitials(displayPerson.name)}
-                    </AvatarFallback>
-                  </Avatar>
+                  {email.subject}
+                </p>
+                <p className="truncate text-sm text-zinc-500">
+                  Click to view email content
+                </p>
+              </div>
 
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      {!email.isRead && email.folder === "inbox" && (
-                        <Circle className="h-2 w-2 shrink-0 fill-blue-500 text-blue-500" />
-                      )}
-                      <span
-                        className={cn(
-                          "truncate",
-                          !email.isRead && email.folder === "inbox"
-                            ? "font-semibold text-zinc-900 dark:text-zinc-50"
-                            : "font-medium text-zinc-700 dark:text-zinc-300"
-                        )}
-                      >
-                        {displayPerson.name}
-                      </span>
-                      <span className="shrink-0 text-xs text-zinc-500">
-                        {formatRelativeTime(new Date(email.timestamp))}
-                      </span>
-                    </div>
-                    <p
-                      className={cn(
-                        "truncate text-sm",
-                        !email.isRead && email.folder === "inbox"
-                          ? "font-medium text-zinc-900 dark:text-zinc-50"
-                          : "text-zinc-700 dark:text-zinc-300"
-                      )}
-                    >
-                      {email.subject}
-                    </p>
-                    <p className="truncate text-sm text-zinc-500">
-                      Click to view email content
-                    </p>
-                  </div>
-
-                  <div
-                    className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100"
-                    onClick={(e) => e.preventDefault()}
+              <div
+                className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100"
+                onClick={(e) => e.preventDefault()}
+              >
+                {email.folder === "inbox" && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleToggleRead(email);
+                    }}
+                    title={email.isRead ? "Mark as unread" : "Mark as read"}
                   >
-                    {email.folder === "inbox" && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleToggleRead(email);
-                        }}
-                        title={email.isRead ? "Mark as unread" : "Mark as read"}
-                      >
-                        {email.isRead ? (
-                          <Mail className="h-4 w-4" />
-                        ) : (
-                          <MailOpen className="h-4 w-4" />
-                        )}
-                      </Button>
+                    {email.isRead ? (
+                      <Mail className="h-4 w-4" />
+                    ) : (
+                      <MailOpen className="h-4 w-4" />
                     )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/50"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleDelete(email._id);
-                      }}
-                      title="Delete"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-          );
-        })}
-      </AnimatePresence>
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/50"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleDelete(email._id);
+                  }}
+                  title="Delete"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </Link>
+        );
+      })}
     </div>
   );
 }
