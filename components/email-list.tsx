@@ -73,7 +73,7 @@ export function EmailList({ emails, showSender = true }: EmailListProps) {
               )}
             >
               <Avatar className="h-10 w-10 shrink-0">
-                <AvatarFallback className="bg-zinc-100 text-sm font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+                <AvatarFallback className="bg-zinc-900 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900">
                   {getInitials(getDisplayName(displayPerson.name, displayPerson.email))}
                 </AvatarFallback>
               </Avatar>
