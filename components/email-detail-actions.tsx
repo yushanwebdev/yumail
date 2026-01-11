@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import {
+  ArrowLeft,
   Mail,
   MailOpen,
   Trash2,
@@ -18,6 +19,7 @@ interface EmailDetailActionsProps {
   isRead: boolean;
   folder: "inbox" | "sent";
   backPath: string;
+  showBackButton?: boolean;
 }
 
 export function EmailDetailActions({
@@ -25,6 +27,7 @@ export function EmailDetailActions({
   isRead,
   folder,
   backPath,
+  showBackButton = false,
 }: EmailDetailActionsProps) {
   const router = useRouter();
   const markAsRead = useMutation(api.emails.markAsRead);
@@ -45,20 +48,32 @@ export function EmailDetailActions({
     router.push(backPath);
   };
 
+  const backLabel = folder === "inbox" ? "Back to Inbox" : "Back to Sent";
+
   return (
-    <div className="flex items-center gap-2 border-t border-zinc-100 pt-4 dark:border-zinc-800">
-      <Button variant="outline" size="sm" className="gap-2">
+    <div className="flex items-center gap-1 sm:gap-2">
+      {showBackButton && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-2"
+          onClick={() => router.push(backPath)}
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span className="hidden sm:inline">{backLabel}</span>
+        </Button>
+      )}
+      <Button variant="ghost" size="sm" className="gap-2">
         <Reply className="h-4 w-4" />
-        Reply
+        <span className="hidden sm:inline">Reply</span>
       </Button>
-      <Button variant="outline" size="sm" className="gap-2">
+      <Button variant="ghost" size="sm" className="gap-2">
         <Forward className="h-4 w-4" />
-        Forward
+        <span className="hidden sm:inline">Forward</span>
       </Button>
-      <div className="flex-1" />
       {folder === "inbox" && (
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
           className="gap-2"
           onClick={handleToggleRead}
@@ -66,24 +81,24 @@ export function EmailDetailActions({
           {isRead ? (
             <>
               <Mail className="h-4 w-4" />
-              Mark unread
+              <span className="hidden sm:inline">Mark unread</span>
             </>
           ) : (
             <>
               <MailOpen className="h-4 w-4" />
-              Mark read
+              <span className="hidden sm:inline">Mark read</span>
             </>
           )}
         </Button>
       )}
       <Button
-        variant="outline"
+        variant="ghost"
         size="sm"
         className="gap-2 text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/50"
         onClick={handleDelete}
       >
         <Trash2 className="h-4 w-4" />
-        Delete
+        <span className="hidden sm:inline">Delete</span>
       </Button>
     </div>
   );

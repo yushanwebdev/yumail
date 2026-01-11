@@ -1,51 +1,31 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Inbox } from "lucide-react";
 import { fetchQuery, fetchMutation } from "convex/nextjs";
-import { Resend } from "resend";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { getInitials, getDisplayName } from "@/lib/utils";
 import { EmailDetailActions } from "@/components/email-detail-actions";
 import { EmailContentSkeleton } from "@/components/email-detail-skeleton";
-import { PageLayout } from "@/components/page-layout";
-import { PageHeader } from "@/components/page-header";
 import { FloatingComposeButton } from "@/components/floating-compose-button";
+import { EmailContent } from "@/components/email-content";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+function formatDate(timestamp: number): string {
+  const date = new Date(timestamp);
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-async function EmailContent({ resendId }: { resendId: string }) {
-  const { data, error } = await resend.emails.receiving.get(resendId);
+  const dayName = days[date.getUTCDay()];
+  const month = months[date.getUTCMonth()];
+  const day = date.getUTCDate();
+  const year = date.getUTCFullYear();
+  const hours = date.getUTCHours();
+  const minutes = date.getUTCMinutes().toString().padStart(2, "0");
+  const ampm = hours >= 12 ? "PM" : "AM";
+  const hour12 = hours % 12 || 12;
 
-  if (error) {
-    console.error("Resend fetch error:", error);
-    return (
-      <p className="text-sm text-zinc-500">Email content not available</p>
-    );
-  }
-
-  const html = data?.html || null;
-  const text = data?.text || null;
-
-  if (html) {
-    return (
-      <div
-        className="prose prose-sm dark:prose-invert max-w-none"
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
-    );
-  }
-
-  if (text) {
-    return (
-      <pre className="whitespace-pre-wrap font-sans text-sm text-zinc-700 dark:text-zinc-300">
-        {text}
-      </pre>
-    );
-  }
-
-  return <p className="text-sm text-zinc-500">Email content not available</p>;
+  return `${dayName}, ${month} ${day}, ${year}, ${hour12}:${minutes} ${ampm} UTC`;
 }
 
 export default async function ReceivedEmailDetailPage({
@@ -71,60 +51,62 @@ export default async function ReceivedEmailDetailPage({
   const senderDisplayName = getDisplayName(email.from.name, email.from.email);
 
   return (
-    <PageLayout>
-      <PageHeader
-        backHref="/received"
-        icon={Inbox}
-        title={email.subject}
-        titleSize="small"
-        subtitle={new Date(email.timestamp).toLocaleString()}
-      />
+    <div className="min-h-screen bg-white dark:bg-zinc-950">
+      {/* Sticky Header */}
+      <header className="sticky top-0 z-10 border-b border-zinc-200 bg-white/80 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-950/80">
+        <div className="mx-auto flex items-center justify-between px-4 py-3 sm:px-12">
+          <Link
+            href="/"
+            className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50"
+          >
+            YuMail
+          </Link>
+          <EmailDetailActions
+            emailId={email._id}
+            isRead={true}
+            folder="inbox"
+            backPath="/received"
+            showBackButton
+          />
+        </div>
+      </header>
 
-      <div className="rounded-xl border border-zinc-200 p-6 dark:border-zinc-800">
-        {/* Sender Info */}
-        <div className="mb-6 flex items-start gap-3">
-          <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-zinc-100 text-sm font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+      {/* Article Content */}
+      <article className="mx-auto px-4 py-6 sm:px-12 sm:py-8">
+        {/* Title */}
+        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-3xl">
+          {email.subject}
+        </h1>
+
+        {/* Meta Info */}
+        <div className="mt-6 flex items-center gap-4 border-b border-zinc-200 pb-6 dark:border-zinc-800">
+          <Avatar className="h-12 w-12">
+            <AvatarFallback className="bg-zinc-900 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900">
               {getInitials(senderDisplayName)}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-zinc-900 dark:text-zinc-50">
-                  {senderDisplayName}
-                </p>
-                <p className="text-sm text-zinc-500">{email.from.email}</p>
-              </div>
-            </div>
-            <p className="mt-1 text-sm text-zinc-500">
-              To: {email.to.map((t) => t.email).join(", ")}
+            <p className="font-medium text-zinc-900 dark:text-zinc-50">
+              {senderDisplayName}
             </p>
-            {email.cc && email.cc.length > 0 && (
-              <p className="text-sm text-zinc-500">
-                Cc: {email.cc.map((c) => c.email).join(", ")}
-              </p>
-            )}
+            <p className="text-sm text-zinc-500">
+              {email.from.email} → {email.to.map((t) => t.email).join(", ")}
+            </p>
           </div>
+        <time className="text-sm text-zinc-500">
+            {formatDate(email.timestamp)}
+          </time>
         </div>
 
         {/* Email Body */}
-        <div className="mb-6 rounded-lg border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="mt-8 overflow-x-auto">
           <Suspense fallback={<EmailContentSkeleton />}>
-            <EmailContent resendId={email.resendId} />
+            <EmailContent resendId={email.resendId} folder="inbox" />
           </Suspense>
         </div>
-
-        {/* Actions */}
-        <EmailDetailActions
-          emailId={email._id}
-          isRead={true}
-          folder="inbox"
-          backPath="/received"
-        />
-      </div>
+      </article>
 
       <FloatingComposeButton />
-    </PageLayout>
+    </div>
   );
 }

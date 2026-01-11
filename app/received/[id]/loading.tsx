@@ -1,5 +1,5 @@
 import { EmailDetailSkeleton } from "@/components/email-detail-skeleton";
 
 export default function ReceivedEmailLoading() {
-  return <EmailDetailSkeleton backPath="/received" folder="inbox" />;
+  return <EmailDetailSkeleton backLabel="Back to Inbox" backPath="/received" />;
 }
