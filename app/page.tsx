@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import {
   Inbox,
@@ -11,13 +12,18 @@ import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/stat-card";
 import { SectionHeader } from "@/components/section-header";
 import {
-  InboxCount,
-  SentCount,
-  UnreadCount,
-  TodayCount,
-} from "@/components/dashboard/stat-values";
-import { RecentUnreadSection } from "@/components/dashboard/recent-unread-section";
-import { TopSendersSection } from "@/components/dashboard/top-senders-section";
+  InboxCountLoader,
+  SentCountLoader,
+  UnreadCountLoader,
+  TodayCountLoader,
+  RecentUnreadLoader,
+  TopSendersLoader,
+} from "@/components/dashboard/loaders";
+import {
+  StatValueSkeleton,
+  RecentUnreadSkeleton,
+  TopSendersSkeleton,
+} from "@/components/dashboard/skeletons";
 
 export default function Dashboard() {
   return (
@@ -58,39 +64,59 @@ export default function Dashboard() {
             icon={Inbox}
             iconStyle="filled"
             title="Inbox"
-            value={<InboxCount />}
+            value={
+              <Suspense fallback={<StatValueSkeleton />}>
+                <InboxCountLoader />
+              </Suspense>
+            }
           />
           <StatCard
             href="/sent"
             icon={Send}
             iconStyle="outlined"
             title="Sent"
-            value={<SentCount />}
+            value={
+              <Suspense fallback={<StatValueSkeleton />}>
+                <SentCountLoader />
+              </Suspense>
+            }
           />
           <StatCard
             icon={MailOpen}
             iconStyle="outlined"
             title="Unread"
-            value={<UnreadCount />}
+            value={
+              <Suspense fallback={<StatValueSkeleton />}>
+                <UnreadCountLoader />
+              </Suspense>
+            }
           />
           <StatCard
             icon={CalendarDays}
             iconStyle="outlined"
             title="Today"
-            value={<TodayCount />}
+            value={
+              <Suspense fallback={<StatValueSkeleton />}>
+                <TodayCountLoader />
+              </Suspense>
+            }
           />
         </div>
 
         {/* Recent Unread Section */}
         <div className="mb-10">
           <SectionHeader title="Recent Unread" viewAllHref="/received" />
-          <RecentUnreadSection />
+          <Suspense fallback={<RecentUnreadSkeleton />}>
+            <RecentUnreadLoader />
+          </Suspense>
         </div>
 
         {/* Top Senders Section */}
         <div>
           <SectionHeader title="Top Senders" />
-          <TopSendersSection />
+          <Suspense fallback={<TopSendersSkeleton />}>
+            <TopSendersLoader />
+          </Suspense>
         </div>
       </div>
     </div>

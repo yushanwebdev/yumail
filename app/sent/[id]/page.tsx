@@ -1,52 +1,10 @@
 import { Suspense } from "react";
-import { notFound } from "next/navigation";
-import { Send } from "lucide-react";
-import { fetchQuery } from "convex/nextjs";
-import { Resend } from "resend";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
-import { getInitials, getDisplayName } from "@/lib/utils";
-import { EmailDetailActions } from "@/components/email-detail-actions";
-import { EmailContentSkeleton } from "@/components/email-detail-skeleton";
-import { PageLayout } from "@/components/page-layout";
-import { PageHeader } from "@/components/page-header";
+import Link from "next/link";
+import { ArrowLeft, Send } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { FloatingComposeButton } from "@/components/floating-compose-button";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-async function EmailContent({ resendId }: { resendId: string }) {
-  const { data, error } = await resend.emails.get(resendId);
-
-  if (error) {
-    console.error("Resend fetch error:", error);
-    return (
-      <p className="text-sm text-zinc-500">Email content not available</p>
-    );
-  }
-
-  const html = data?.html || null;
-  const text = data?.text || null;
-
-  if (html) {
-    return (
-      <div
-        className="prose prose-sm dark:prose-invert max-w-none"
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
-    );
-  }
-
-  if (text) {
-    return (
-      <pre className="whitespace-pre-wrap font-sans text-sm text-zinc-700 dark:text-zinc-300">
-        {text}
-      </pre>
-    );
-  }
-
-  return <p className="text-sm text-zinc-500">Email content not available</p>;
-}
+import { SentEmailDetailLoader } from "@/components/sent/sent-email-detail-loader";
+import { SentEmailDetailSkeleton } from "@/components/sent/sent-email-detail-skeleton";
 
 export default async function SentEmailDetailPage({
   params,
@@ -55,78 +13,31 @@ export default async function SentEmailDetailPage({
 }) {
   const { id } = await params;
 
-  const email = await fetchQuery(api.emails.getById, {
-    id: id as Id<"emails">,
-  });
-
-  if (!email) {
-    notFound();
-  }
-
-  const recipientDisplayName = getDisplayName(email.to[0].name, email.to[0].email);
-
   return (
-    <PageLayout>
-      <PageHeader
-        backHref="/sent"
-        icon={Send}
-        title={email.subject}
-        titleSize="small"
-        subtitle={new Date(email.timestamp).toLocaleString()}
-      />
+    <div className="min-h-screen bg-white dark:bg-zinc-950">
+      <div className="mx-auto max-w-3xl px-4 py-6">
+        {/* Static Back Button */}
+        <Link href="/sent">
+          <Button variant="ghost" size="sm" className="mb-4 gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+        </Link>
 
-      <div className="rounded-xl border border-zinc-200 p-6 dark:border-zinc-800">
-        {/* Recipient Info */}
-        <div className="mb-6 flex items-start gap-3">
-          <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-zinc-100 text-sm font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-              {getInitials(recipientDisplayName)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-zinc-900 dark:text-zinc-50">
-                  To: {recipientDisplayName}
-                </p>
-                <p className="text-sm text-zinc-500">{email.to[0].email}</p>
-              </div>
-            </div>
-            {email.to.length > 1 && (
-              <p className="mt-1 text-sm text-zinc-500">
-                +{email.to.length - 1} more recipient
-                {email.to.length > 2 ? "s" : ""}:{" "}
-                {email.to
-                  .slice(1)
-                  .map((t) => t.email)
-                  .join(", ")}
-              </p>
-            )}
-            {email.cc && email.cc.length > 0 && (
-              <p className="text-sm text-zinc-500">
-                Cc: {email.cc.map((c) => c.email).join(", ")}
-              </p>
-            )}
+        {/* Static Icon */}
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900 dark:bg-zinc-100">
+            <Send className="h-5 w-5 text-white dark:text-zinc-900" />
           </div>
         </div>
 
-        {/* Email Body */}
-        <div className="mb-6 rounded-lg border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900">
-          <Suspense fallback={<EmailContentSkeleton />}>
-            <EmailContent resendId={email.resendId} />
-          </Suspense>
-        </div>
-
-        {/* Actions */}
-        <EmailDetailActions
-          emailId={email._id}
-          isRead={email.isRead}
-          folder="sent"
-          backPath="/sent"
-        />
+        {/* Dynamic Content */}
+        <Suspense fallback={<SentEmailDetailSkeleton />}>
+          <SentEmailDetailLoader id={id} />
+        </Suspense>
       </div>
 
       <FloatingComposeButton />
-    </PageLayout>
+    </div>
   );
 }
