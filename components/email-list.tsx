@@ -7,10 +7,10 @@ import {
   Trash2,
   Circle,
 } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { DeliveryStatusBadge } from "@/components/delivery-status-badge";
-import { formatRelativeTime, getInitials, getDisplayName, cn } from "@/lib/utils";
+import { EmailAvatar } from "@/components/email-avatar";
+import { formatRelativeTime, getDisplayName, cn } from "@/lib/utils";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Doc, Id } from "@/convex/_generated/dataModel";
@@ -73,11 +73,11 @@ export function EmailList({ emails, showSender = true }: EmailListProps) {
                   "bg-emerald-50/50 dark:bg-emerald-950/20"
               )}
             >
-              <Avatar className="h-10 w-10 shrink-0">
-                <AvatarFallback className="bg-zinc-900 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900">
-                  {getInitials(getDisplayName(displayPerson.name, displayPerson.email))}
-                </AvatarFallback>
-              </Avatar>
+              <EmailAvatar
+                email={displayPerson.email}
+                name={displayPerson.name}
+                className="h-10 w-10 shrink-0"
+              />
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">

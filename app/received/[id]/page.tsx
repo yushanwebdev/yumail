@@ -3,14 +3,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Mail } from "lucide-react";
 import { fetchQuery, fetchMutation } from "convex/nextjs";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { getInitials, getDisplayName } from "@/lib/utils";
+import { getDisplayName } from "@/lib/utils";
+import { EmailAvatar } from "@/components/email-avatar";
 import { EmailDetailActions } from "@/components/email-detail-actions";
 import { EmailContentSkeleton } from "@/components/email-detail-skeleton";
 import { FloatingComposeButton } from "@/components/floating-compose-button";
 import { EmailContent } from "@/components/email-content";
+import { EmailAttachments } from "@/components/email-attachments";
 
 function formatDate(timestamp: number): string {
   const date = new Date(timestamp);
@@ -82,11 +83,11 @@ export default async function ReceivedEmailDetailPage({
         {/* Meta Info */}
         <div className="mt-6 flex items-center gap-4 border-b border-zinc-200 pb-6 dark:border-zinc-800">
           <div className="relative">
-            <Avatar className="h-12 w-12">
-              <AvatarFallback className="bg-zinc-900 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900">
-                {getInitials(senderDisplayName)}
-              </AvatarFallback>
-            </Avatar>
+            <EmailAvatar
+              email={email.from.email}
+              name={email.from.name}
+              className="h-12 w-12"
+            />
             {/* Received indicator badge */}
             <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 ring-2 ring-white dark:ring-zinc-950">
               <Mail className="h-2.5 w-2.5 text-white" />
@@ -116,6 +117,14 @@ export default async function ReceivedEmailDetailPage({
             <EmailContent resendId={email.resendId} folder="inbox" />
           </Suspense>
         </div>
+
+        {/* Attachments */}
+        {email.attachments && email.attachments.length > 0 && (
+          <EmailAttachments
+            attachments={email.attachments}
+            resendId={email.resendId}
+          />
+        )}
       </article>
 
       <FloatingComposeButton />

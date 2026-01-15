@@ -26,8 +26,8 @@ export function RecentUnreadSkeleton() {
 
 export function TopSendersSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-      {[...Array(4)].map((_, i) => (
+    <div className="grid grid-cols-2 gap-3">
+      {[...Array(2)].map((_, i) => (
         <div
           key={i}
           className="flex flex-col items-center rounded-xl border border-zinc-200 p-4 dark:border-zinc-800"
