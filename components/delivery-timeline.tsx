@@ -168,7 +168,7 @@ export function DeliveryTimeline({ events, className }: DeliveryTimelineProps) {
                   {formatEventTime(event.timestamp)}
                 </p>
                 {event.details && (
-                  <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500 truncate max-w-xs">
+                  <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
                     {event.details}
                   </p>
                 )}
