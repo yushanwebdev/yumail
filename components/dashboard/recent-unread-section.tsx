@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Mail } from "lucide-react";
+import { Mail, Check } from "lucide-react";
 import { Preloaded, usePreloadedQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
@@ -40,7 +40,7 @@ export function RecentUnreadSection({
         const { month, day } = formatDate(email.timestamp);
         return (
           <Link key={email._id} href={`/received/${email._id}`}>
-            <div className="group flex cursor-pointer items-center gap-4 p-4 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900">
+            <div className="group relative flex cursor-pointer items-center gap-4 p-4 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900">
               <Avatar className="h-10 w-10 shrink-0 self-center">
                 <AvatarFallback className="bg-zinc-900 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900">
                   {getInitials(getDisplayName(email.from.name, email.from.email))}
@@ -65,12 +65,13 @@ export function RecentUnreadSection({
               <Button
                 variant="ghost"
                 size="sm"
-                className="shrink-0 self-center opacity-0 transition-opacity group-hover:opacity-100"
+                className="absolute right-4 top-1/2 -translate-y-1/2 gap-1.5 bg-white opacity-0 shadow-sm transition-opacity hover:bg-emerald-50 hover:text-emerald-700 group-hover:opacity-100 dark:bg-zinc-900 dark:hover:bg-emerald-950/50 dark:hover:text-emerald-400"
                 onClick={(e) => {
                   e.preventDefault();
                   markAsRead({ id: email._id });
                 }}
               >
+                <Check className="h-3.5 w-3.5" />
                 Mark read
               </Button>
             </div>
