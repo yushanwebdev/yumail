@@ -15,5 +15,5 @@ export function InboxBadge({
     return null;
   }
 
-  return <Badge variant="blue">{stats.unreadCount} new</Badge>;
+  return <Badge variant="emerald">{stats.unreadCount} new</Badge>;
 }

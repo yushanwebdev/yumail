@@ -11,6 +11,7 @@ export default function SentPage() {
       <PageHeader
         backHref="/"
         icon={Send}
+        iconColor="blue"
         title="Sent"
         subtitle={<SentSubtitle />}
       />

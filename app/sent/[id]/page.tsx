@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AlertTriangle, Send } from "lucide-react";
 import { fetchQuery } from "convex/nextjs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { api } from "@/convex/_generated/api";
@@ -10,6 +11,8 @@ import { EmailDetailActions } from "@/components/email-detail-actions";
 import { EmailContentSkeleton } from "@/components/email-detail-skeleton";
 import { FloatingComposeButton } from "@/components/floating-compose-button";
 import { EmailContent } from "@/components/email-content";
+import { DeliveryStatusBadge } from "@/components/delivery-status-badge";
+import { DeliveryTimeline } from "@/components/delivery-timeline";
 
 function formatDate(timestamp: number): string {
   const date = new Date(timestamp);
@@ -43,7 +46,7 @@ export default async function SentEmailDetailPage({
     notFound();
   }
 
-  const recipientDisplayName = getDisplayName(email.to[0].name, email.to[0].email);
+  const senderDisplayName = getDisplayName(email.from.name, email.from.email);
 
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950">
@@ -75,17 +78,28 @@ export default async function SentEmailDetailPage({
 
         {/* Meta Info */}
         <div className="mt-6 flex items-center gap-4 border-b border-zinc-200 pb-6 dark:border-zinc-800">
-          <Avatar className="h-12 w-12">
-            <AvatarFallback className="bg-zinc-900 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900">
-              {getInitials(recipientDisplayName)}
-            </AvatarFallback>
-          </Avatar>
+          <div className="relative">
+            <Avatar className="h-12 w-12">
+              <AvatarFallback className="bg-zinc-900 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900">
+                {getInitials(senderDisplayName)}
+              </AvatarFallback>
+            </Avatar>
+            {/* Sent indicator badge */}
+            <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 ring-2 ring-white dark:ring-zinc-950">
+              <Send className="h-2.5 w-2.5 text-white" />
+            </div>
+          </div>
           <div className="flex-1">
-            <p className="font-medium text-zinc-900 dark:text-zinc-50">
-              To: {recipientDisplayName}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="font-medium text-zinc-900 dark:text-zinc-50">
+                {senderDisplayName}
+              </p>
+              <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-600 dark:bg-blue-950/50 dark:text-blue-400">
+                Sent
+              </span>
+            </div>
             <p className="text-sm text-zinc-500">
-              {email.to.map((t) => t.email).join(", ")}
+              {email.from.email} → {email.to.map((t) => t.email).join(", ")}
               {email.cc && email.cc.length > 0 && (
                 <span> · Cc: {email.cc.map((c) => c.email).join(", ")}</span>
               )}
@@ -95,6 +109,62 @@ export default async function SentEmailDetailPage({
             {formatDate(email.timestamp)}
           </time>
         </div>
+
+        {/* Delivery Status Section */}
+        {email.deliveryStatus && (
+          <div className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900/50">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                Delivery Status
+              </h2>
+              <DeliveryStatusBadge status={email.deliveryStatus} variant="badge" />
+            </div>
+
+            {/* Bounce Alert */}
+            {email.deliveryStatus === "bounced" && email.bounceInfo && (
+              <div className="mb-4 flex gap-3 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-900/50 dark:bg-red-950/30">
+                <AlertTriangle className="h-5 w-5 shrink-0 text-red-500" />
+                <div>
+                  <p className="text-sm font-medium text-red-800 dark:text-red-300">
+                    {email.bounceInfo.type === "hard"
+                      ? "Permanent delivery failure"
+                      : "Temporary delivery failure"}
+                  </p>
+                  <p className="mt-1 text-sm text-red-700 dark:text-red-400">
+                    {email.bounceInfo.type === "hard"
+                      ? "This email address appears to be invalid. Please verify the address and try again."
+                      : "This was a temporary issue. The email may be delivered later, or you can try resending."}
+                  </p>
+                  {email.bounceInfo.message && (
+                    <p className="mt-2 text-xs text-red-600 dark:text-red-500">
+                      {email.bounceInfo.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Complained Alert */}
+            {email.deliveryStatus === "complained" && (
+              <div className="mb-4 flex gap-3 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-900/50 dark:bg-red-950/30">
+                <AlertTriangle className="h-5 w-5 shrink-0 text-red-500" />
+                <div>
+                  <p className="text-sm font-medium text-red-800 dark:text-red-300">
+                    Marked as spam
+                  </p>
+                  <p className="mt-1 text-sm text-red-700 dark:text-red-400">
+                    The recipient marked this email as spam. Consider reviewing your email content and recipient list.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Timeline */}
+            {email.statusHistory && email.statusHistory.length > 0 && (
+              <DeliveryTimeline events={email.statusHistory} />
+            )}
+          </div>
+        )}
 
         {/* Email Body */}
         <div className="mt-8 overflow-x-auto">

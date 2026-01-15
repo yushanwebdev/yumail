@@ -54,6 +54,7 @@ export function EmailIframe({ html }: EmailIframeProps) {
             font-size: 14px;
             line-height: 1.5;
             color: #333;
+            overflow: hidden;
           }
           img {
             max-width: 100%;
@@ -73,7 +74,8 @@ export function EmailIframe({ html }: EmailIframeProps) {
       ref={iframeRef}
       srcDoc={wrappedHtml}
       sandbox="allow-same-origin"
-      className="w-full border-0"
+      scrolling="no"
+      className="w-full border-0 overflow-hidden"
       style={{ minHeight: "200px" }}
       title="Email content"
     />

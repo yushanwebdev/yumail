@@ -14,6 +14,7 @@ export default function ReceivedPage() {
       <PageHeader
         backHref="/"
         icon={Inbox}
+        iconColor="emerald"
         title="Inbox"
         subtitle={
           <Suspense fallback={<Skeleton className="inline-block h-4 w-32" />}>

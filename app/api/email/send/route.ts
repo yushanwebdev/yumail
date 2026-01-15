@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
 
     // Send email via Resend
     const { data, error } = await resend.emails.send({
-      from: from || "YuMail <onboarding@resend.dev>",
+      from: from || "YuMail <me@yushanweb.dev>",
       to: Array.isArray(to) ? to : [to],
       subject,
       html: html || text || "",
@@ -38,13 +38,13 @@ export async function POST(request: NextRequest) {
       name: email.split("@")[0],
     }));
 
-    const fromAddress = from || "YuMail <onboarding@resend.dev>";
+    const fromAddress = from || "YuMail <me@yushanweb.dev>";
     const fromMatch = fromAddress.match(/^(.+?)\s*<(.+)>$/);
     const fromParsed = fromMatch
       ? { name: fromMatch[1].trim(), email: fromMatch[2].trim() }
       : { name: fromAddress.split("@")[0], email: fromAddress };
 
-    await convex.mutation(api.emails.createSent, {
+    const emailId = await convex.mutation(api.emails.createSent, {
       resendId: data!.id,
       from: fromParsed,
       to: recipients,
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       timestamp: Date.now(),
     });
 
-    return NextResponse.json({ success: true, id: data!.id });
+    return NextResponse.json({ success: true, id: data!.id, emailId });
   } catch (err) {
     console.error("Send email error:", err);
     return NextResponse.json(

@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { DeliveryStatusBadge } from "@/components/delivery-status-badge";
 import { formatRelativeTime, getInitials, getDisplayName, cn } from "@/lib/utils";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -69,7 +70,7 @@ export function EmailList({ emails, showSender = true }: EmailListProps) {
                 "group flex cursor-pointer items-start gap-4 px-4 py-4 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/50",
                 !email.isRead &&
                   email.folder === "inbox" &&
-                  "bg-blue-50/50 dark:bg-blue-950/20"
+                  "bg-emerald-50/50 dark:bg-emerald-950/20"
               )}
             >
               <Avatar className="h-10 w-10 shrink-0">
@@ -81,7 +82,7 @@ export function EmailList({ emails, showSender = true }: EmailListProps) {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   {!email.isRead && email.folder === "inbox" && (
-                    <Circle className="h-2 w-2 shrink-0 fill-blue-500 text-blue-500" />
+                    <Circle className="h-2 w-2 shrink-0 fill-emerald-500 text-emerald-500" />
                   )}
                   <span
                     className={cn(
@@ -96,6 +97,12 @@ export function EmailList({ emails, showSender = true }: EmailListProps) {
                   <span className="shrink-0 text-xs text-zinc-500">
                     {formatRelativeTime(new Date(email.timestamp))}
                   </span>
+                  {email.folder === "sent" && (
+                    <DeliveryStatusBadge
+                      status={email.deliveryStatus}
+                      variant="icon"
+                    />
+                  )}
                 </div>
                 <p
                   className={cn(

@@ -19,6 +19,37 @@ export default defineSchema({
     isRead: v.boolean(),
     folder: v.union(v.literal("inbox"), v.literal("sent")),
 
+    // Delivery status (for sent emails)
+    deliveryStatus: v.optional(
+      v.union(
+        v.literal("queued"),
+        v.literal("sent"),
+        v.literal("delivered"),
+        v.literal("delayed"),
+        v.literal("bounced"),
+        v.literal("complained")
+      )
+    ),
+
+    // Bounce details (only populated on bounce)
+    bounceInfo: v.optional(
+      v.object({
+        type: v.union(v.literal("hard"), v.literal("soft")),
+        message: v.optional(v.string()),
+      })
+    ),
+
+    // Timeline history for detail view
+    statusHistory: v.optional(
+      v.array(
+        v.object({
+          status: v.string(),
+          timestamp: v.number(),
+          details: v.optional(v.string()),
+        })
+      )
+    ),
+
     // Attachments metadata (not content)
     attachments: v.optional(
       v.array(
@@ -32,5 +63,6 @@ export default defineSchema({
   })
     .index("by_folder_timestamp", ["folder", "timestamp"])
     .index("by_resendId", ["resendId"])
-    .index("by_folder_isRead", ["folder", "isRead"]),
+    .index("by_folder_isRead", ["folder", "isRead"])
+    .index("by_deliveryStatus", ["folder", "deliveryStatus"]),
 });

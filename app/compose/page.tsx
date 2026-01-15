@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 export default function ComposePage() {
   const router = useRouter();
 
+  const [fromName, setFromName] = useState("me");
   const [to, setTo] = useState("");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
@@ -17,12 +18,14 @@ export default function ComposePage() {
   const [error, setError] = useState<string | null>(null);
 
   const handleSend = async () => {
-    if (!to.trim() || !subject.trim() || !body.trim()) {
+    if (!fromName.trim() || !to.trim() || !subject.trim() || !body.trim()) {
       return;
     }
 
     setIsSending(true);
     setError(null);
+
+    const fromEmail = `${fromName.trim()}@yushanweb.dev`;
 
     try {
       const response = await fetch("/api/email/send", {
@@ -31,6 +34,7 @@ export default function ComposePage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          from: `YuMail <${fromEmail}>`,
           to: to.split(",").map((email) => email.trim()),
           subject: subject.trim(),
           text: body.trim(),
@@ -38,12 +42,13 @@ export default function ComposePage() {
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const data = await response.json();
         throw new Error(data.error || "Failed to send email");
       }
 
-      router.push("/sent");
+      router.push(`/sent/${data.emailId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to send email");
       setIsSending(false);
@@ -54,7 +59,7 @@ export default function ComposePage() {
     router.back();
   };
 
-  const isValid = to.trim() && subject.trim() && body.trim();
+  const isValid = fromName.trim() && to.trim() && subject.trim() && body.trim();
 
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950">
@@ -107,6 +112,23 @@ export default function ComposePage() {
 
         {/* Compose Form */}
         <div className="rounded-xl border border-zinc-200 dark:border-zinc-800">
+          {/* From Field */}
+          <div className="flex items-center border-b border-zinc-100 px-4 dark:border-zinc-800">
+            <label className="w-16 shrink-0 text-sm font-medium text-zinc-500">
+              From:
+            </label>
+            <div className="flex flex-1 items-center">
+              <Input
+                type="text"
+                placeholder="name"
+                value={fromName}
+                onChange={(e) => setFromName(e.target.value)}
+                className="w-24 border-0 bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+              />
+              <span className="text-sm text-zinc-500">@yushanweb.dev</span>
+            </div>
+          </div>
+
           {/* To Field */}
           <div className="flex items-center border-b border-zinc-100 px-4 dark:border-zinc-800">
             <label className="w-16 shrink-0 text-sm font-medium text-zinc-500">
