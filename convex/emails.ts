@@ -182,6 +182,13 @@ export const createSent = mutation({
       timestamp: args.timestamp,
       isRead: true, // Sent emails are always "read"
       folder: "sent",
+      deliveryStatus: "queued",
+      statusHistory: [
+        {
+          status: "queued",
+          timestamp: args.timestamp,
+        },
+      ],
     });
 
     return emailId;
@@ -206,5 +213,62 @@ export const deleteEmail = mutation({
   args: { id: v.id("emails") },
   handler: async (ctx, args) => {
     await ctx.db.delete(args.id);
+  },
+});
+
+export const updateDeliveryStatus = mutation({
+  args: {
+    resendId: v.string(),
+    status: v.union(
+      v.literal("sent"),
+      v.literal("delivered"),
+      v.literal("delayed"),
+      v.literal("bounced"),
+      v.literal("complained")
+    ),
+    timestamp: v.number(),
+    bounceInfo: v.optional(
+      v.object({
+        type: v.union(v.literal("hard"), v.literal("soft")),
+        message: v.optional(v.string()),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    const email = await ctx.db
+      .query("emails")
+      .withIndex("by_resendId", (q) => q.eq("resendId", args.resendId))
+      .first();
+
+    if (!email) {
+      console.warn(`Email not found for resendId: ${args.resendId}`);
+      return null;
+    }
+
+    // Build status history entry
+    const historyEntry: {
+      status: string;
+      timestamp: number;
+      details?: string;
+    } = {
+      status: args.status,
+      timestamp: args.timestamp,
+    };
+
+    if (args.bounceInfo?.message) {
+      historyEntry.details = args.bounceInfo.message;
+    }
+
+    // Append to existing history
+    const statusHistory = [...(email.statusHistory || []), historyEntry];
+
+    // Update the email record
+    await ctx.db.patch(email._id, {
+      deliveryStatus: args.status,
+      ...(args.bounceInfo && { bounceInfo: args.bounceInfo }),
+      statusHistory,
+    });
+
+    return email._id;
   },
 });
