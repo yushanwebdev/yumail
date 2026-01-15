@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
 
     // Send email via Resend
     const { data, error } = await resend.emails.send({
-      from: from || "YuMail <onboarding@resend.dev>",
+      from: from || "YuMail <me@yushanweb.dev>",
       to: Array.isArray(to) ? to : [to],
       subject,
       html: html || text || "",
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
       name: email.split("@")[0],
     }));
 
-    const fromAddress = from || "YuMail <onboarding@resend.dev>";
+    const fromAddress = from || "YuMail <me@yushanweb.dev>";
     const fromMatch = fromAddress.match(/^(.+?)\s*<(.+)>$/);
     const fromParsed = fromMatch
       ? { name: fromMatch[1].trim(), email: fromMatch[2].trim() }

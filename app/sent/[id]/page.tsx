@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Send } from "lucide-react";
 import { fetchQuery } from "convex/nextjs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { api } from "@/convex/_generated/api";
@@ -46,7 +46,7 @@ export default async function SentEmailDetailPage({
     notFound();
   }
 
-  const recipientDisplayName = getDisplayName(email.to[0].name, email.to[0].email);
+  const senderDisplayName = getDisplayName(email.from.name, email.from.email);
 
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950">
@@ -78,17 +78,28 @@ export default async function SentEmailDetailPage({
 
         {/* Meta Info */}
         <div className="mt-6 flex items-center gap-4 border-b border-zinc-200 pb-6 dark:border-zinc-800">
-          <Avatar className="h-12 w-12">
-            <AvatarFallback className="bg-zinc-900 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900">
-              {getInitials(recipientDisplayName)}
-            </AvatarFallback>
-          </Avatar>
+          <div className="relative">
+            <Avatar className="h-12 w-12">
+              <AvatarFallback className="bg-zinc-900 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900">
+                {getInitials(senderDisplayName)}
+              </AvatarFallback>
+            </Avatar>
+            {/* Sent indicator badge */}
+            <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 ring-2 ring-white dark:ring-zinc-950">
+              <Send className="h-2.5 w-2.5 text-white" />
+            </div>
+          </div>
           <div className="flex-1">
-            <p className="font-medium text-zinc-900 dark:text-zinc-50">
-              To: {recipientDisplayName}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="font-medium text-zinc-900 dark:text-zinc-50">
+                {senderDisplayName}
+              </p>
+              <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-600 dark:bg-blue-950/50 dark:text-blue-400">
+                Sent
+              </span>
+            </div>
             <p className="text-sm text-zinc-500">
-              {email.to.map((t) => t.email).join(", ")}
+              {email.from.email} → {email.to.map((t) => t.email).join(", ")}
               {email.cc && email.cc.length > 0 && (
                 <span> · Cc: {email.cc.map((c) => c.email).join(", ")}</span>
               )}
