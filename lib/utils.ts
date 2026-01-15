@@ -39,3 +39,45 @@ export function getInitials(name: string): string {
     .toUpperCase()
     .slice(0, 2);
 }
+
+const COMMON_EMAIL_DOMAINS = [
+  "gmail.com",
+  "googlemail.com",
+  "outlook.com",
+  "hotmail.com",
+  "live.com",
+  "msn.com",
+  "yahoo.com",
+  "yahoo.co.uk",
+  "ymail.com",
+  "icloud.com",
+  "me.com",
+  "mac.com",
+  "aol.com",
+  "proton.me",
+  "protonmail.com",
+  "zoho.com",
+  "mail.com",
+  "gmx.com",
+  "gmx.net",
+  "fastmail.com",
+  "tutanota.com",
+  "hey.com",
+];
+
+export function getDisplayName(name: string, email: string): string {
+  const domain = email.split("@")[1]?.toLowerCase();
+
+  if (!domain) {
+    return name;
+  }
+
+  // If it's a common email domain, use the provided name
+  if (COMMON_EMAIL_DOMAINS.includes(domain)) {
+    return name;
+  }
+
+  // For business/custom domains, extract and capitalize the domain name
+  const domainName = domain.split(".")[0];
+  return domainName.charAt(0).toUpperCase() + domainName.slice(1);
+}
