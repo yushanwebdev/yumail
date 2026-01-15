@@ -47,7 +47,7 @@ export function RecentUnreadSection({
                 </AvatarFallback>
               </Avatar>
               <div className="flex h-10 shrink-0 flex-col items-center justify-center text-center">
-                <span className="text-xs font-medium leading-none text-blue-600 dark:text-blue-400">
+                <span className="text-xs font-medium leading-none text-emerald-600 dark:text-emerald-400">
                   {month}
                 </span>
                 <span className="text-lg font-semibold leading-tight text-zinc-900 dark:text-zinc-50">

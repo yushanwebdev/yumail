@@ -7,6 +7,7 @@ interface PageHeaderProps {
   backHref: string;
   backLabel?: string;
   icon?: LucideIcon;
+  iconColor?: "default" | "emerald" | "blue";
   title: string;
   titleSize?: "default" | "small";
   subtitle?: ReactNode;
@@ -17,11 +18,18 @@ export function PageHeader({
   backHref,
   backLabel = "Back",
   icon: Icon,
+  iconColor = "default",
   title,
   titleSize = "default",
   subtitle,
   badge,
 }: PageHeaderProps) {
+  const iconColorStyles = {
+    default: "bg-zinc-900 dark:bg-zinc-100",
+    emerald: "bg-emerald-500 dark:bg-emerald-500",
+    blue: "bg-blue-500 dark:bg-blue-500",
+  };
+
   return (
     <div className="mb-6">
       <Link href={backHref}>
@@ -34,8 +42,8 @@ export function PageHeader({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           {Icon && (
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900 dark:bg-zinc-100">
-              <Icon className="h-5 w-5 text-white dark:text-zinc-900" />
+            <div className={`flex h-10 w-10 items-center justify-center rounded-full ${iconColorStyles[iconColor]}`}>
+              <Icon className="h-5 w-5 text-white" />
             </div>
           )}
           <div>
