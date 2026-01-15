@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       ? { name: fromMatch[1].trim(), email: fromMatch[2].trim() }
       : { name: fromAddress.split("@")[0], email: fromAddress };
 
-    await convex.mutation(api.emails.createSent, {
+    const emailId = await convex.mutation(api.emails.createSent, {
       resendId: data!.id,
       from: fromParsed,
       to: recipients,
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       timestamp: Date.now(),
     });
 
-    return NextResponse.json({ success: true, id: data!.id });
+    return NextResponse.json({ success: true, id: data!.id, emailId });
   } catch (err) {
     console.error("Send email error:", err);
     return NextResponse.json(
