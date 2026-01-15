@@ -2,8 +2,8 @@
 
 import { Preloaded, usePreloadedQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { getInitials, getDisplayName } from "@/lib/utils";
+import { EmailAvatar } from "@/components/email-avatar";
+import { getDisplayName } from "@/lib/utils";
 
 export function TopSendersSection({
   preloadedSenders,
@@ -23,11 +23,11 @@ export function TopSendersSection({
           key={sender.email}
           className="flex flex-col items-center rounded-xl border border-zinc-200 p-4 dark:border-zinc-800"
         >
-          <Avatar className="mb-2 h-12 w-12">
-            <AvatarFallback className="bg-zinc-100 text-sm font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-              {getInitials(getDisplayName(sender.name, sender.email))}
-            </AvatarFallback>
-          </Avatar>
+          <EmailAvatar
+            email={sender.email}
+            name={sender.name}
+            className="mb-2 h-12 w-12"
+          />
           <div className="w-full truncate text-center text-sm font-medium text-zinc-900 dark:text-zinc-50">
             {getDisplayName(sender.name, sender.email)}
           </div>

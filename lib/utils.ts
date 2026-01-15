@@ -65,6 +65,12 @@ const COMMON_EMAIL_DOMAINS = [
   "hey.com",
 ];
 
+export function getAvatarUrl(email: string): string {
+  const domain = email.split('@')[1];
+  const fallback = encodeURIComponent(`https://www.google.com/s2/favicons?domain=${domain}&sz=128`);
+  return `https://unavatar.io/${email}?fallback=${fallback}`;
+}
+
 export function getDisplayName(name: string, email: string): string {
   const domain = email.split("@")[1]?.toLowerCase();
 

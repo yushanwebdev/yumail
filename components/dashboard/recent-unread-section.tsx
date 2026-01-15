@@ -5,9 +5,9 @@ import { Mail, Check } from "lucide-react";
 import { Preloaded, usePreloadedQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { EmailAvatar } from "@/components/email-avatar";
 import { EmptyState } from "@/components/empty-state";
-import { getInitials, getDisplayName } from "@/lib/utils";
+import { getDisplayName } from "@/lib/utils";
 
 export function RecentUnreadSection({
   preloadedUnread,
@@ -41,11 +41,11 @@ export function RecentUnreadSection({
         return (
           <Link key={email._id} href={`/received/${email._id}`}>
             <div className="group relative flex cursor-pointer items-center gap-4 p-4 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900">
-              <Avatar className="h-10 w-10 shrink-0 self-center">
-                <AvatarFallback className="bg-zinc-900 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900">
-                  {getInitials(getDisplayName(email.from.name, email.from.email))}
-                </AvatarFallback>
-              </Avatar>
+              <EmailAvatar
+                email={email.from.email}
+                name={email.from.name}
+                className="h-10 w-10 shrink-0 self-center"
+              />
               <div className="flex h-10 shrink-0 flex-col items-center justify-center text-center">
                 <span className="text-xs font-medium leading-none text-emerald-600 dark:text-emerald-400">
                   {month}
