@@ -5,68 +5,89 @@ import { Webhook } from "svix";
 
 const http = httpRouter();
 
+// Verify Resend webhook signature using Svix
+async function verifyWebhook<T>(
+  request: Request,
+  secretEnvVar: string
+): Promise<{ success: true; event: T } | { success: false; response: Response }> {
+  const webhookSecret = process.env[secretEnvVar];
+
+  if (!webhookSecret) {
+    console.error(`Missing ${secretEnvVar} environment variable`);
+    return { success: false, response: new Response("Server configuration error", { status: 500 }) };
+  }
+
+  const svixId = request.headers.get("svix-id");
+  const svixTimestamp = request.headers.get("svix-timestamp");
+  const svixSignature = request.headers.get("svix-signature");
+
+  if (!svixId || !svixTimestamp || !svixSignature) {
+    console.error("Missing svix headers");
+    return { success: false, response: new Response("Missing webhook signature headers", { status: 400 }) };
+  }
+
+  const payload = await request.text();
+  const wh = new Webhook(webhookSecret);
+
+  try {
+    const event = wh.verify(payload, {
+      "svix-id": svixId,
+      "svix-timestamp": svixTimestamp,
+      "svix-signature": svixSignature,
+    }) as T;
+    return { success: true, event };
+  } catch (err) {
+    console.error("Webhook verification failed:", err);
+    return { success: false, response: new Response("Invalid webhook signature", { status: 401 }) };
+  }
+}
+
 // Parse "Name <email@example.com>" or just "email@example.com" format
 function parseEmailAddress(addr: string): { email: string; name: string } {
   const match = addr.match(/^(.+?)\s*<(.+)>$/);
   if (match) {
     return { name: match[1].trim(), email: match[2].trim() };
   }
-  // Just an email address without name
   const emailOnly = addr.trim();
   return { name: emailOnly.split("@")[0], email: emailOnly };
 }
+
+// Types for Resend webhook events
+type EmailReceivedEvent = {
+  type: string;
+  data: {
+    email_id: string;
+    from: string;
+    to: string[];
+    cc?: string[];
+    subject: string;
+    attachments?: Array<{ id: string; filename: string; content_type: string }>;
+  };
+};
+
+type EmailStatusEvent = {
+  type: string;
+  created_at: string;
+  data: {
+    email_id: string;
+    bounce?: { type: "Permanent" | "Temporary"; message?: string };
+  };
+};
 
 http.route({
   path: "/webhooks/resend/email-received",
   method: "POST",
   handler: httpAction(async (ctx, request) => {
-    const webhookSecret = process.env.RESEND_WEBHOOK_EMAIL_RECEIVED_SECRET;
+    const result = await verifyWebhook<EmailReceivedEvent>(
+      request,
+      "RESEND_WEBHOOK_EMAIL_RECEIVED_SECRET"
+    );
 
-    if (!webhookSecret) {
-      console.error("Missing RESEND_WEBHOOK_EMAIL_RECEIVED_SECRET environment variable");
-      return new Response("Server configuration error", { status: 500 });
+    if (!result.success) {
+      return result.response;
     }
 
-    // Extract Svix headers for signature verification
-    const svixId = request.headers.get("svix-id");
-    const svixTimestamp = request.headers.get("svix-timestamp");
-    const svixSignature = request.headers.get("svix-signature");
-
-    if (!svixId || !svixTimestamp || !svixSignature) {
-      console.error("Missing svix headers");
-      return new Response("Missing webhook signature headers", { status: 400 });
-    }
-
-    const payload = await request.text();
-
-    // Verify webhook signature
-    const wh = new Webhook(webhookSecret);
-    let event: {
-      type: string;
-      data: {
-        email_id: string;
-        from: string;
-        to: string[];
-        cc?: string[];
-        subject: string;
-        attachments?: Array<{
-          id: string;
-          filename: string;
-          content_type: string;
-        }>;
-      };
-    };
-
-    try {
-      event = wh.verify(payload, {
-        "svix-id": svixId,
-        "svix-timestamp": svixTimestamp,
-        "svix-signature": svixSignature,
-      }) as typeof event;
-    } catch (err) {
-      console.error("Webhook verification failed:", err);
-      return new Response("Invalid webhook signature", { status: 401 });
-    }
+    const { event } = result;
 
     // Process verified event
     if (event.type === "email.received") {
@@ -103,49 +124,16 @@ http.route({
   path: "/webhooks/resend/email-status",
   method: "POST",
   handler: httpAction(async (ctx, request) => {
-    const webhookSecret = process.env.RESEND_WEBHOOK_EMAIL_STATUS_SECRET;
+    const result = await verifyWebhook<EmailStatusEvent>(
+      request,
+      "RESEND_WEBHOOK_EMAIL_STATUS_SECRET"
+    );
 
-    if (!webhookSecret) {
-      console.error("Missing RESEND_WEBHOOK_EMAIL_STATUS_SECRET environment variable");
-      return new Response("Server configuration error", { status: 500 });
+    if (!result.success) {
+      return result.response;
     }
 
-    // Extract Svix headers for signature verification
-    const svixId = request.headers.get("svix-id");
-    const svixTimestamp = request.headers.get("svix-timestamp");
-    const svixSignature = request.headers.get("svix-signature");
-
-    if (!svixId || !svixTimestamp || !svixSignature) {
-      console.error("Missing svix headers");
-      return new Response("Missing webhook signature headers", { status: 400 });
-    }
-
-    const payload = await request.text();
-
-    // Verify webhook signature
-    const wh = new Webhook(webhookSecret);
-    let event: {
-      type: string;
-      created_at: string;
-      data: {
-        email_id: string;
-        bounce?: {
-          type: "Permanent" | "Temporary";
-          message?: string;
-        };
-      };
-    };
-
-    try {
-      event = wh.verify(payload, {
-        "svix-id": svixId,
-        "svix-timestamp": svixTimestamp,
-        "svix-signature": svixSignature,
-      }) as typeof event;
-    } catch (err) {
-      console.error("Webhook verification failed:", err);
-      return new Response("Invalid webhook signature", { status: 401 });
-    }
+    const { event } = result;
 
     // Map event type to delivery status
     const statusMap: Record<string, "sent" | "delivered" | "delayed" | "bounced" | "complained"> = {
