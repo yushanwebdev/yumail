@@ -28,7 +28,7 @@ import {
 export default function Dashboard() {
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950">
-      <div className="mx-auto max-w-3xl px-4 py-6">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
@@ -57,68 +57,74 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Quick Access Cards */}
-        <div className="mb-10 grid grid-cols-2 gap-3 md:grid-cols-4">
-          <StatCard
-            href="/received"
-            icon={Inbox}
-            iconStyle="filled"
-            color="emerald"
-            title="Inbox"
-            value={
-              <Suspense fallback={<StatValueSkeleton />}>
-                <InboxCountLoader />
-              </Suspense>
-            }
-          />
-          <StatCard
-            href="/sent"
-            icon={Send}
-            iconStyle="filled"
-            color="blue"
-            title="Sent"
-            value={
-              <Suspense fallback={<StatValueSkeleton />}>
-                <SentCountLoader />
-              </Suspense>
-            }
-          />
-          <StatCard
-            icon={MailOpen}
-            iconStyle="outlined"
-            title="Unread"
-            value={
-              <Suspense fallback={<StatValueSkeleton />}>
-                <UnreadCountLoader />
-              </Suspense>
-            }
-          />
-          <StatCard
-            icon={CalendarDays}
-            iconStyle="outlined"
-            title="Today"
-            value={
-              <Suspense fallback={<StatValueSkeleton />}>
-                <TodayCountLoader />
-              </Suspense>
-            }
-          />
-        </div>
+        {/* Two-Column Layout */}
+        <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-3 lg:gap-8">
+          {/* Left Column - Recent Unread (main content) */}
+          <div className="flex flex-col lg:col-span-2">
+            <SectionHeader title="Recent Unread" viewAllHref="/received" />
+            <Suspense fallback={<RecentUnreadSkeleton />}>
+              <RecentUnreadLoader />
+            </Suspense>
+          </div>
 
-        {/* Recent Unread Section */}
-        <div className="mb-10">
-          <SectionHeader title="Recent Unread" viewAllHref="/received" />
-          <Suspense fallback={<RecentUnreadSkeleton />}>
-            <RecentUnreadLoader />
-          </Suspense>
-        </div>
+          {/* Right Column - Stats + Top Senders */}
+          <div className="space-y-8">
+            {/* Quick Access Cards */}
+            <div className="grid grid-cols-2 gap-3">
+              <StatCard
+                href="/received"
+                icon={Inbox}
+                iconStyle="filled"
+                color="emerald"
+                title="Inbox"
+                value={
+                  <Suspense fallback={<StatValueSkeleton />}>
+                    <InboxCountLoader />
+                  </Suspense>
+                }
+              />
+              <StatCard
+                href="/sent"
+                icon={Send}
+                iconStyle="filled"
+                color="blue"
+                title="Sent"
+                value={
+                  <Suspense fallback={<StatValueSkeleton />}>
+                    <SentCountLoader />
+                  </Suspense>
+                }
+              />
+              <StatCard
+                icon={MailOpen}
+                iconStyle="outlined"
+                title="Unread"
+                value={
+                  <Suspense fallback={<StatValueSkeleton />}>
+                    <UnreadCountLoader />
+                  </Suspense>
+                }
+              />
+              <StatCard
+                icon={CalendarDays}
+                iconStyle="outlined"
+                title="Today"
+                value={
+                  <Suspense fallback={<StatValueSkeleton />}>
+                    <TodayCountLoader />
+                  </Suspense>
+                }
+              />
+            </div>
 
-        {/* Top Senders Section */}
-        <div>
-          <SectionHeader title="Top Senders" />
-          <Suspense fallback={<TopSendersSkeleton />}>
-            <TopSendersLoader />
-          </Suspense>
+            {/* Top Senders Section */}
+            <div>
+              <SectionHeader title="Top Senders" />
+              <Suspense fallback={<TopSendersSkeleton />}>
+                <TopSendersLoader />
+              </Suspense>
+            </div>
+          </div>
         </div>
       </div>
     </div>

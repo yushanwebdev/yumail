@@ -17,7 +17,7 @@ export function TopSendersSection({
   }
 
   return (
-    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3">
       {senderBreakdown.map((sender) => (
         <div
           key={sender.email}
