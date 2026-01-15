@@ -104,7 +104,7 @@ export function DeliveryTimeline({ events, className }: DeliveryTimelineProps) {
   const deliveryDuration = formatDeliveryDuration(events);
 
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn("", className)}>
       {/* Delivery duration badge */}
       {deliveryDuration && (
         <p className="mb-4 text-sm text-green-600 dark:text-green-400 font-medium">
@@ -112,14 +112,13 @@ export function DeliveryTimeline({ events, className }: DeliveryTimelineProps) {
         </p>
       )}
 
-      {/* Vertical line */}
-      <div className="absolute left-[11px] top-0 bottom-0 w-0.5 bg-zinc-200 dark:bg-zinc-700" />
-
-      <div className="space-y-4">
+      {/* Timeline events */}
+      <div className="space-y-0">
         {sortedEvents.map((event, index) => {
           const config = eventConfig[event.status] || eventConfig.queued;
           const Icon = config.icon;
           const isLatest = index === 0;
+          const isLast = index === sortedEvents.length - 1;
           const isTerminal =
             event.status === "delivered" ||
             event.status === "bounced" ||
@@ -130,24 +129,31 @@ export function DeliveryTimeline({ events, className }: DeliveryTimelineProps) {
               key={`${event.status}-${event.timestamp}`}
               className="relative flex gap-4"
             >
-              {/* Icon dot */}
-              <div
-                className={cn(
-                  "relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full",
-                  config.bgColor,
-                  isLatest &&
-                    isTerminal &&
-                    "ring-2 ring-offset-2 ring-offset-white dark:ring-offset-zinc-950",
-                  isLatest && event.status === "delivered" && "ring-green-500",
-                  isLatest && event.status === "bounced" && "ring-red-500",
-                  isLatest && event.status === "complained" && "ring-red-500"
+              {/* Icon column with connecting line */}
+              <div className="flex flex-col items-center">
+                {/* Icon dot */}
+                <div
+                  className={cn(
+                    "relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full",
+                    config.bgColor,
+                    isLatest &&
+                      isTerminal &&
+                      "ring-2 ring-offset-2 ring-offset-zinc-50 dark:ring-offset-zinc-900",
+                    isLatest && event.status === "delivered" && "ring-green-500",
+                    isLatest && event.status === "bounced" && "ring-red-500",
+                    isLatest && event.status === "complained" && "ring-red-500"
+                  )}
+                >
+                  <Icon className={cn("h-3.5 w-3.5", config.color)} />
+                </div>
+                {/* Connecting line to next item */}
+                {!isLast && (
+                  <div className="w-0.5 flex-1 min-h-4 bg-zinc-200 dark:bg-zinc-700" />
                 )}
-              >
-                <Icon className={cn("h-3.5 w-3.5", config.color)} />
               </div>
 
               {/* Content */}
-              <div className="flex-1 pb-1">
+              <div className={cn("flex-1", !isLast && "pb-4")}>
                 <p
                   className={cn(
                     "text-sm font-medium",
