@@ -11,6 +11,7 @@ import { EmailDetailActions } from "@/components/email-detail-actions";
 import { EmailContentSkeleton } from "@/components/email-detail-skeleton";
 import { FloatingComposeButton } from "@/components/floating-compose-button";
 import { EmailContent } from "@/components/email-content";
+import { EmailAttachments } from "@/components/email-attachments";
 
 function formatDate(timestamp: number): string {
   const date = new Date(timestamp);
@@ -116,6 +117,14 @@ export default async function ReceivedEmailDetailPage({
             <EmailContent resendId={email.resendId} folder="inbox" />
           </Suspense>
         </div>
+
+        {/* Attachments */}
+        {email.attachments && email.attachments.length > 0 && (
+          <EmailAttachments
+            attachments={email.attachments}
+            resendId={email.resendId}
+          />
+        )}
       </article>
 
       <FloatingComposeButton />
