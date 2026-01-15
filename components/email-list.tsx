@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { DeliveryStatusBadge } from "@/components/delivery-status-badge";
 import { formatRelativeTime, getInitials, cn } from "@/lib/utils";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -105,6 +106,12 @@ export function EmailList({ emails, showSender = true }: EmailListProps) {
                       <span className="shrink-0 text-xs text-zinc-500">
                         {formatRelativeTime(new Date(email.timestamp))}
                       </span>
+                      {email.folder === "sent" && (
+                        <DeliveryStatusBadge
+                          status={email.deliveryStatus}
+                          variant="icon"
+                        />
+                      )}
                     </div>
                     <p
                       className={cn(

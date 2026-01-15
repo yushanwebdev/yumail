@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, AlertTriangle } from "lucide-react";
 import { fetchQuery } from "convex/nextjs";
 import { Resend } from "resend";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,8 @@ import { Id } from "@/convex/_generated/dataModel";
 import { getInitials } from "@/lib/utils";
 import { EmailDetailActions } from "@/components/email-detail-actions";
 import { EmailContentSkeleton } from "@/components/email-detail-skeleton";
+import { DeliveryStatusBadge } from "@/components/delivery-status-badge";
+import { DeliveryTimeline } from "@/components/delivery-timeline";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -119,6 +121,62 @@ export default async function SentEmailDetailPage({
               )}
             </div>
           </div>
+
+          {/* Delivery Status Section */}
+          {email.deliveryStatus && (
+            <div className="mb-6 rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900/50">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                  Delivery Status
+                </h2>
+                <DeliveryStatusBadge status={email.deliveryStatus} variant="badge" />
+              </div>
+
+              {/* Bounce Alert */}
+              {email.deliveryStatus === "bounced" && email.bounceInfo && (
+                <div className="mb-4 flex gap-3 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-900/50 dark:bg-red-950/30">
+                  <AlertTriangle className="h-5 w-5 shrink-0 text-red-500" />
+                  <div>
+                    <p className="text-sm font-medium text-red-800 dark:text-red-300">
+                      {email.bounceInfo.type === "hard"
+                        ? "Permanent delivery failure"
+                        : "Temporary delivery failure"}
+                    </p>
+                    <p className="mt-1 text-sm text-red-700 dark:text-red-400">
+                      {email.bounceInfo.type === "hard"
+                        ? "This email address appears to be invalid. Please verify the address and try again."
+                        : "This was a temporary issue. The email may be delivered later, or you can try resending."}
+                    </p>
+                    {email.bounceInfo.message && (
+                      <p className="mt-2 text-xs text-red-600 dark:text-red-500">
+                        {email.bounceInfo.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Complained Alert */}
+              {email.deliveryStatus === "complained" && (
+                <div className="mb-4 flex gap-3 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-900/50 dark:bg-red-950/30">
+                  <AlertTriangle className="h-5 w-5 shrink-0 text-red-500" />
+                  <div>
+                    <p className="text-sm font-medium text-red-800 dark:text-red-300">
+                      Marked as spam
+                    </p>
+                    <p className="mt-1 text-sm text-red-700 dark:text-red-400">
+                      The recipient marked this email as spam. Consider reviewing your email content and recipient list.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Timeline */}
+              {email.statusHistory && email.statusHistory.length > 0 && (
+                <DeliveryTimeline events={email.statusHistory} />
+              )}
+            </div>
+          )}
 
           {/* Email Body - streams in progressively */}
           <div className="mb-6 rounded-lg border border-zinc-100 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
