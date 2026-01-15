@@ -27,10 +27,10 @@ import {
 
 export default function Dashboard() {
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-950">
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-white lg:flex lg:h-screen lg:flex-col lg:overflow-hidden dark:bg-zinc-950">
+      <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col lg:px-8">
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex shrink-0 items-center justify-between">
           <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
             YuMail
           </h1>
@@ -58,9 +58,9 @@ export default function Dashboard() {
         </div>
 
         {/* Two-Column Layout */}
-        <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-3 lg:gap-8">
+        <div className="grid grid-cols-1 gap-6 lg:min-h-0 lg:flex-1 lg:grid-cols-3 lg:items-start lg:gap-8">
           {/* Left Column - Recent Unread (main content) */}
-          <div className="flex flex-col lg:col-span-2">
+          <div className="flex flex-col lg:col-span-2 lg:h-full lg:min-h-0">
             <SectionHeader title="Recent Unread" viewAllHref="/received" />
             <Suspense fallback={<RecentUnreadSkeleton />}>
               <RecentUnreadLoader />

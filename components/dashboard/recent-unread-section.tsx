@@ -24,9 +24,7 @@ export function RecentUnreadSection({
     return { month, day };
   };
 
-  const displayEmails = unreadEmails.slice(0, 5);
-
-  if (displayEmails.length === 0) {
+  if (unreadEmails.length === 0) {
     return (
       <div className="rounded-xl border border-zinc-200 dark:border-zinc-800">
         <EmptyState icon={Mail} title="No unread emails" />
@@ -35,9 +33,9 @@ export function RecentUnreadSection({
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
-      <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
-        {displayEmails.map((email) => {
+    <div className="flex flex-col overflow-hidden rounded-xl border border-zinc-200 lg:min-h-0 lg:flex-1 dark:border-zinc-800">
+      <div className="divide-y divide-zinc-100 lg:flex-1 lg:overflow-y-auto dark:divide-zinc-800">
+        {unreadEmails.map((email) => {
           const { month, day } = formatDate(email.timestamp);
           return (
             <Link key={email._id} href={`/received/${email._id}`}>
@@ -80,11 +78,13 @@ export function RecentUnreadSection({
           );
         })}
       </div>
-      {/* Stretch filler with subtle message */}
-      <div className="flex flex-1 flex-col items-center justify-center border-t border-dashed border-zinc-200 bg-zinc-50/50 p-6 dark:border-zinc-800 dark:bg-zinc-900/30">
-        <Sparkles className="mb-2 h-5 w-5 text-zinc-300 dark:text-zinc-600" />
-        <p className="text-sm text-zinc-400 dark:text-zinc-500">All caught up!</p>
-      </div>
+      {/* Show "All caught up" only when there are few items */}
+      {unreadEmails.length < 5 && (
+        <div className="flex flex-1 flex-col items-center justify-center border-t border-dashed border-zinc-200 bg-zinc-50/50 p-6 dark:border-zinc-800 dark:bg-zinc-900/30">
+          <Sparkles className="mb-2 h-5 w-5 text-zinc-300 dark:text-zinc-600" />
+          <p className="text-sm text-zinc-400 dark:text-zinc-500">All caught up!</p>
+        </div>
+      )}
     </div>
   );
 }
