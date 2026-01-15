@@ -63,6 +63,7 @@ export default function Dashboard() {
             href="/received"
             icon={Inbox}
             iconStyle="filled"
+            color="emerald"
             title="Inbox"
             value={
               <Suspense fallback={<StatValueSkeleton />}>
@@ -73,7 +74,8 @@ export default function Dashboard() {
           <StatCard
             href="/sent"
             icon={Send}
-            iconStyle="outlined"
+            iconStyle="filled"
+            color="blue"
             title="Sent"
             value={
               <Suspense fallback={<StatValueSkeleton />}>
