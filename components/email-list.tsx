@@ -20,9 +20,13 @@ type ConvexEmail = Doc<"emails">;
 interface EmailListProps {
   emails: ConvexEmail[];
   showSender?: boolean;
+  emptyMessage?: {
+    title: string;
+    description: string;
+  };
 }
 
-export function EmailList({ emails, showSender = true }: EmailListProps) {
+export function EmailList({ emails, showSender = true, emptyMessage }: EmailListProps) {
   const markAsRead = useMutation(api.emails.markAsRead);
   const markAsUnread = useMutation(api.emails.markAsUnread);
   const deleteEmail = useMutation(api.emails.deleteEmail);
@@ -46,10 +50,10 @@ export function EmailList({ emails, showSender = true }: EmailListProps) {
           <Mail className="h-8 w-8 text-zinc-400" />
         </div>
         <p className="mt-4 text-lg font-medium text-zinc-900 dark:text-zinc-50">
-          No emails yet
+          {emptyMessage?.title ?? "No emails yet"}
         </p>
         <p className="mt-1 text-sm text-zinc-500">
-          When you receive emails, they&apos;ll appear here.
+          {emptyMessage?.description ?? "When you receive emails, they'll appear here."}
         </p>
       </div>
     );

@@ -66,6 +66,7 @@ export default async function ReceivedEmailDetailPage({
           <EmailDetailActions
             emailId={email._id}
             isRead={true}
+            isSpam={email.isSpam}
             folder="inbox"
             backPath="/received"
             showBackButton

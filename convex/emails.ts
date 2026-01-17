@@ -4,14 +4,24 @@ import { query, mutation } from "./_generated/server";
 // ============ QUERIES ============
 
 export const listInbox = query({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    filter: v.optional(v.union(v.literal("all"), v.literal("spam"))),
+  },
+  handler: async (ctx, args) => {
     const emails = await ctx.db
       .query("emails")
       .withIndex("by_folder_timestamp", (q) => q.eq("folder", "inbox"))
       .order("desc")
       .collect();
-    // Filter out spam emails by default
+
+    // Apply filter
+    if (args.filter === "spam") {
+      return emails.filter((e) => e.isSpam);
+    }
+    if (args.filter === "all") {
+      return emails;
+    }
+    // Default: filter out spam emails
     return emails.filter((e) => !e.isSpam);
   },
 });
@@ -67,6 +77,7 @@ export const getStats = query({
 
     // Exclude spam from inbox stats
     const inbox = allEmails.filter((e) => e.folder === "inbox" && !e.isSpam);
+    const spam = allEmails.filter((e) => e.folder === "inbox" && e.isSpam);
     const sent = allEmails.filter((e) => e.folder === "sent");
     const unread = inbox.filter((e) => !e.isRead);
 
@@ -80,6 +91,7 @@ export const getStats = query({
       totalSent: sent.length,
       unreadCount: unread.length,
       todayCount,
+      spamCount: spam.length,
     };
   },
 });
