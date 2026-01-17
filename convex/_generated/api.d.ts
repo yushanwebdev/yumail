@@ -10,6 +10,7 @@
 
 import type * as emails from "../emails.js";
 import type * as http from "../http.js";
+import type * as testSeed from "../testSeed.js";
 
 import type {
   ApiFromModules,
@@ -20,6 +21,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   emails: typeof emails;
   http: typeof http;
+  testSeed: typeof testSeed;
 }>;
 
 /**
