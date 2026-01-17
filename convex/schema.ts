@@ -17,6 +17,7 @@ export default defineSchema({
 
     // Status
     isRead: v.boolean(),
+    isSpam: v.optional(v.boolean()),
     folder: v.union(v.literal("inbox"), v.literal("sent")),
 
     // Delivery status (for sent emails)
@@ -65,4 +66,13 @@ export default defineSchema({
     .index("by_resendId", ["resendId"])
     .index("by_folder_isRead", ["folder", "isRead"])
     .index("by_deliveryStatus", ["folder", "deliveryStatus"]),
+
+  blockedSenders: defineTable({
+    email: v.string(),
+    domain: v.optional(v.string()),
+    blockedAt: v.number(),
+    reason: v.optional(v.string()),
+  })
+    .index("by_email", ["email"])
+    .index("by_domain", ["domain"]),
 });
