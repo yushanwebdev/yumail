@@ -29,7 +29,7 @@ export function InboxEmailList({
   const spamCount = stats?.spamCount ?? 0;
 
   return (
-    <div>
+    <div data-view={filter === "spam" ? "spam" : "inbox"} data-spam-count={spamCount}>
       {/* Filter toggle */}
       <div className="flex items-center gap-2 border-b border-zinc-200 px-4 py-2 dark:border-zinc-800">
           <Filter className="h-4 w-4 text-zinc-400" />

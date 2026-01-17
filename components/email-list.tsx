@@ -45,7 +45,7 @@ export function EmailList({ emails, showSender = true, emptyMessage }: EmailList
 
   if (emails.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
+      <div className="flex flex-col items-center justify-center py-16 text-center" data-empty="true">
         <div className="rounded-full bg-zinc-100 p-4 dark:bg-zinc-800">
           <Mail className="h-8 w-8 text-zinc-400" />
         </div>
@@ -68,7 +68,14 @@ export function EmailList({ emails, showSender = true, emptyMessage }: EmailList
           : `/sent/${email._id}`;
 
         return (
-          <Link key={email._id} href={detailPath}>
+          <Link
+            key={email._id}
+            href={detailPath}
+            data-email-id={email._id}
+            data-is-spam={email.isSpam ?? false}
+            data-is-read={email.isRead}
+            data-folder={email.folder}
+          >
             <div
               className={cn(
                 "group flex cursor-pointer items-start gap-4 px-4 py-4 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/50",

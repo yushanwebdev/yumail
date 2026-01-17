@@ -53,7 +53,11 @@ export default async function ReceivedEmailDetailPage({
   const senderDisplayName = getDisplayName(email.from.name, email.from.email);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-950">
+    <div
+      className="min-h-screen bg-white dark:bg-zinc-950"
+      data-email-id={email._id}
+      data-is-spam={email.isSpam ?? false}
+    >
       {/* Sticky Header */}
       <header className="sticky top-0 z-10 border-b border-zinc-200 bg-white/80 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-950/80">
         <div className="mx-auto flex items-center justify-between px-4 py-3 sm:px-12">

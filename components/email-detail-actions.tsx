@@ -115,6 +115,8 @@ export function EmailDetailActions({
                 : "gap-2 text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:text-amber-400 dark:hover:bg-amber-950/50"
             }
             onClick={handleToggleSpam}
+            data-action="toggle-spam"
+            data-is-spam={isSpam}
           >
             {isSpam ? (
               <>
