@@ -4,14 +4,25 @@ import { query, mutation } from "./_generated/server";
 // ============ QUERIES ============
 
 export const listInbox = query({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    filter: v.optional(v.union(v.literal("all"), v.literal("spam"))),
+  },
+  handler: async (ctx, args) => {
     const emails = await ctx.db
       .query("emails")
       .withIndex("by_folder_timestamp", (q) => q.eq("folder", "inbox"))
       .order("desc")
       .collect();
-    return emails;
+
+    // Apply filter
+    if (args.filter === "spam") {
+      return emails.filter((e) => e.isSpam);
+    }
+    if (args.filter === "all") {
+      return emails;
+    }
+    // Default: filter out spam emails
+    return emails.filter((e) => !e.isSpam);
   },
 });
 
@@ -37,7 +48,8 @@ export const listUnread = query({
       )
       .order("desc")
       .collect();
-    return emails;
+    // Filter out spam emails
+    return emails.filter((e) => !e.isSpam);
   },
 });
 
@@ -63,7 +75,9 @@ export const getStats = query({
   handler: async (ctx) => {
     const allEmails = await ctx.db.query("emails").collect();
 
-    const inbox = allEmails.filter((e) => e.folder === "inbox");
+    // Exclude spam from inbox stats
+    const inbox = allEmails.filter((e) => e.folder === "inbox" && !e.isSpam);
+    const spam = allEmails.filter((e) => e.folder === "inbox" && e.isSpam);
     const sent = allEmails.filter((e) => e.folder === "sent");
     const unread = inbox.filter((e) => !e.isRead);
 
@@ -77,6 +91,7 @@ export const getStats = query({
       totalSent: sent.length,
       unreadCount: unread.length,
       todayCount,
+      spamCount: spam.length,
     };
   },
 });
@@ -85,10 +100,12 @@ export const getSenderBreakdown = query({
   args: { limit: v.optional(v.number()) },
   handler: async (ctx, args) => {
     const limit = args.limit ?? 5;
-    const inboxEmails = await ctx.db
+    const allInboxEmails = await ctx.db
       .query("emails")
       .withIndex("by_folder_timestamp", (q) => q.eq("folder", "inbox"))
       .collect();
+    // Exclude spam from sender breakdown
+    const inboxEmails = allInboxEmails.filter((e) => !e.isSpam);
 
     // Count emails per sender
     const senderCounts = new Map<string, { email: string; name: string; count: number }>();
@@ -147,6 +164,22 @@ export const createFromWebhook = mutation({
       return existing._id;
     }
 
+    // Check if sender is blocked
+    const senderEmail = args.from.email;
+    const senderDomain = senderEmail.split("@")[1];
+
+    const blockedByEmail = await ctx.db
+      .query("blockedSenders")
+      .withIndex("by_email", (q) => q.eq("email", senderEmail))
+      .first();
+
+    const blockedByDomain = await ctx.db
+      .query("blockedSenders")
+      .withIndex("by_domain", (q) => q.eq("domain", senderDomain))
+      .first();
+
+    const isBlocked = !!blockedByEmail || !!blockedByDomain;
+
     const emailId = await ctx.db.insert("emails", {
       resendId: args.resendId,
       from: args.from,
@@ -155,6 +188,7 @@ export const createFromWebhook = mutation({
       subject: args.subject,
       timestamp: args.timestamp,
       isRead: false,
+      isSpam: isBlocked, // Auto-mark as spam if sender is blocked
       folder: "inbox",
       attachments: args.attachments,
     });
@@ -206,6 +240,47 @@ export const markAsUnread = mutation({
   args: { id: v.id("emails") },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.id, { isRead: false });
+  },
+});
+
+export const markAsSpam = mutation({
+  args: {
+    id: v.id("emails"),
+    blockSender: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const email = await ctx.db.get(args.id);
+    if (!email) return;
+
+    await ctx.db.patch(args.id, { isSpam: true });
+
+    // Optionally block the sender
+    if (args.blockSender) {
+      const senderEmail = email.from.email;
+      const domain = senderEmail.split("@")[1];
+
+      // Check if already blocked
+      const existing = await ctx.db
+        .query("blockedSenders")
+        .withIndex("by_email", (q) => q.eq("email", senderEmail))
+        .first();
+
+      if (!existing) {
+        await ctx.db.insert("blockedSenders", {
+          email: senderEmail,
+          domain,
+          blockedAt: Date.now(),
+          reason: "Marked as spam",
+        });
+      }
+    }
+  },
+});
+
+export const markAsNotSpam = mutation({
+  args: { id: v.id("emails") },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.id, { isSpam: false });
   },
 });
 
@@ -270,5 +345,63 @@ export const updateDeliveryStatus = mutation({
     });
 
     return email._id;
+  },
+});
+
+// ============ BLOCKED SENDERS ============
+
+export const listBlockedSenders = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("blockedSenders").collect();
+  },
+});
+
+export const blockSender = mutation({
+  args: {
+    email: v.string(),
+    blockDomain: v.optional(v.boolean()),
+    reason: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const domain = args.email.split("@")[1];
+
+    // Check if already blocked
+    const existing = await ctx.db
+      .query("blockedSenders")
+      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .first();
+
+    if (existing) {
+      return existing._id;
+    }
+
+    return await ctx.db.insert("blockedSenders", {
+      email: args.email,
+      domain: args.blockDomain ? domain : undefined,
+      blockedAt: Date.now(),
+      reason: args.reason,
+    });
+  },
+});
+
+export const unblockSender = mutation({
+  args: { id: v.id("blockedSenders") },
+  handler: async (ctx, args) => {
+    await ctx.db.delete(args.id);
+  },
+});
+
+export const unblockSenderByEmail = mutation({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const blocked = await ctx.db
+      .query("blockedSenders")
+      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .first();
+
+    if (blocked) {
+      await ctx.db.delete(blocked._id);
+    }
   },
 });

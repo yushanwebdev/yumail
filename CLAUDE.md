@@ -9,6 +9,10 @@ bun run dev      # Start dev server (port 3000)
 bun run build    # Production build
 bun run lint     # ESLint check
 npx convex dev   # Start Convex dev server (required for backend)
+
+# Testing
+npx playwright test              # Run E2E tests (requires local Convex)
+docker compose -f docker-compose.test.yml up -d  # Start local Convex for tests
 ```
 
 ## Architecture
@@ -51,3 +55,14 @@ Indexes: `by_folder_timestamp`, `by_resendId`, `by_folder_isRead`, `by_deliveryS
 - `RESEND_API_KEY` - Resend API key
 - `RESEND_WEBHOOK_EMAIL_RECEIVED_SECRET` - Webhook signature verification (inbound emails)
 - `RESEND_WEBHOOK_EMAIL_STATUS_SECRET` - Webhook signature verification (delivery status)
+
+## Testing
+
+E2E tests run against a local Convex backend (Docker) to ensure isolation from production data.
+
+**Key patterns:**
+- Use `data-*` attributes for test selectors (not CSS classes or arbitrary timeouts)
+- Wait for explicit state changes: `await expect(page.locator('[data-view="spam"]')).toBeVisible()`
+- Test data is seeded/cleared via `convex/testSeed.ts`
+
+See [docs/TESTING.md](docs/TESTING.md) for comprehensive testing documentation.

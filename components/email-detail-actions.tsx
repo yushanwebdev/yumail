@@ -8,6 +8,8 @@ import {
   Trash2,
   Reply,
   Forward,
+  ShieldAlert,
+  ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMutation } from "convex/react";
@@ -17,6 +19,7 @@ import { Id } from "@/convex/_generated/dataModel";
 interface EmailDetailActionsProps {
   emailId: Id<"emails">;
   isRead: boolean;
+  isSpam?: boolean;
   folder: "inbox" | "sent";
   backPath: string;
   showBackButton?: boolean;
@@ -25,6 +28,7 @@ interface EmailDetailActionsProps {
 export function EmailDetailActions({
   emailId,
   isRead,
+  isSpam = false,
   folder,
   backPath,
   showBackButton = false,
@@ -32,6 +36,8 @@ export function EmailDetailActions({
   const router = useRouter();
   const markAsRead = useMutation(api.emails.markAsRead);
   const markAsUnread = useMutation(api.emails.markAsUnread);
+  const markAsSpam = useMutation(api.emails.markAsSpam);
+  const markAsNotSpam = useMutation(api.emails.markAsNotSpam);
   const deleteEmail = useMutation(api.emails.deleteEmail);
 
   const handleToggleRead = async () => {
@@ -45,6 +51,15 @@ export function EmailDetailActions({
 
   const handleDelete = async () => {
     await deleteEmail({ id: emailId });
+    router.push(backPath);
+  };
+
+  const handleToggleSpam = async () => {
+    if (isSpam) {
+      await markAsNotSpam({ id: emailId });
+    } else {
+      await markAsSpam({ id: emailId, blockSender: true });
+    }
     router.push(backPath);
   };
 
@@ -72,24 +87,50 @@ export function EmailDetailActions({
         <span className="hidden sm:inline">Forward</span>
       </Button>
       {folder === "inbox" && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="gap-2"
-          onClick={handleToggleRead}
-        >
-          {isRead ? (
-            <>
-              <Mail className="h-4 w-4" />
-              <span className="hidden sm:inline">Mark unread</span>
-            </>
-          ) : (
-            <>
-              <MailOpen className="h-4 w-4" />
-              <span className="hidden sm:inline">Mark read</span>
-            </>
-          )}
-        </Button>
+        <>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-2"
+            onClick={handleToggleRead}
+          >
+            {isRead ? (
+              <>
+                <Mail className="h-4 w-4" />
+                <span className="hidden sm:inline">Mark unread</span>
+              </>
+            ) : (
+              <>
+                <MailOpen className="h-4 w-4" />
+                <span className="hidden sm:inline">Mark read</span>
+              </>
+            )}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={
+              isSpam
+                ? "gap-2 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950/50"
+                : "gap-2 text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:text-amber-400 dark:hover:bg-amber-950/50"
+            }
+            onClick={handleToggleSpam}
+            data-action="toggle-spam"
+            data-is-spam={isSpam}
+          >
+            {isSpam ? (
+              <>
+                <ShieldCheck className="h-4 w-4" />
+                <span className="hidden sm:inline">Not spam</span>
+              </>
+            ) : (
+              <>
+                <ShieldAlert className="h-4 w-4" />
+                <span className="hidden sm:inline">Spam</span>
+              </>
+            )}
+          </Button>
+        </>
       )}
       <Button
         variant="ghost"
