@@ -26,13 +26,13 @@ interface ResendReceivedEmail {
   to: string[];
   subject: string;
   created_at: string;
-  cc?: string[];
-  bcc?: string[];
+  cc?: string[] | null;
+  bcc?: string[] | null;
   attachments?: Array<{
     id: string;
     filename: string;
     content_type: string;
-  }>;
+  }> | null;
 }
 
 interface ResendSentEmail {
@@ -41,8 +41,8 @@ interface ResendSentEmail {
   to: string[];
   subject: string;
   created_at: string;
-  cc?: string[];
-  bcc?: string[];
+  cc?: string[] | null;
+  bcc?: string[] | null;
 }
 
 /**
@@ -164,9 +164,9 @@ async function importEmails() {
     to: string[];
     subject: string;
     created_at: string;
-    cc?: string[];
+    cc?: string[] | null;
     folder: "inbox" | "sent";
-    attachments?: Array<{ id: string; filename: string; content_type: string }>;
+    attachments?: Array<{ id: string; filename: string; content_type: string }> | null;
   };
 
   const allEmails: EmailWithFolder[] = [
