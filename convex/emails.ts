@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query, mutation, QueryCtx, MutationCtx } from "./_generated/server";
+import { query, mutation, internalMutation, QueryCtx, MutationCtx } from "./_generated/server";
 
 // Helper to require authentication
 async function requireAuth(ctx: QueryCtx | MutationCtx) {
@@ -151,8 +151,9 @@ export const getSenderBreakdown = query({
 
 // ============ MUTATIONS ============
 
-// Note: createFromWebhook is called by Resend webhooks, protected by Svix signature verification
-export const createFromWebhook = mutation({
+// Internal mutation - only callable from server-side code (HTTP actions).
+// Svix signature verification happens in convex/http.ts before calling this.
+export const createFromWebhook = internalMutation({
   args: {
     resendId: v.string(),
     from: v.object({ email: v.string(), name: v.string() }),
@@ -314,8 +315,9 @@ export const deleteEmail = mutation({
   },
 });
 
-// Note: updateDeliveryStatus is called by Resend webhooks, protected by Svix signature verification
-export const updateDeliveryStatus = mutation({
+// Internal mutation - only callable from server-side code (HTTP actions).
+// Svix signature verification happens in convex/http.ts before calling this.
+export const updateDeliveryStatus = internalMutation({
   args: {
     resendId: v.string(),
     status: v.union(
