@@ -1,5 +1,14 @@
 import { v } from "convex/values";
-import { query, mutation } from "./_generated/server";
+import { query, mutation, QueryCtx, MutationCtx } from "./_generated/server";
+
+// Helper to require authentication
+async function requireAuth(ctx: QueryCtx | MutationCtx) {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) {
+    throw new Error("Unauthorized");
+  }
+  return identity;
+}
 
 // ============ QUERIES ============
 
@@ -8,6 +17,7 @@ export const listInbox = query({
     filter: v.optional(v.union(v.literal("all"), v.literal("spam"))),
   },
   handler: async (ctx, args) => {
+    await requireAuth(ctx);
     const emails = await ctx.db
       .query("emails")
       .withIndex("by_folder_timestamp", (q) => q.eq("folder", "inbox"))
@@ -29,6 +39,7 @@ export const listInbox = query({
 export const listSent = query({
   args: {},
   handler: async (ctx) => {
+    await requireAuth(ctx);
     const emails = await ctx.db
       .query("emails")
       .withIndex("by_folder_timestamp", (q) => q.eq("folder", "sent"))
@@ -41,6 +52,7 @@ export const listSent = query({
 export const listUnread = query({
   args: {},
   handler: async (ctx) => {
+    await requireAuth(ctx);
     const emails = await ctx.db
       .query("emails")
       .withIndex("by_folder_isRead", (q) =>
@@ -56,6 +68,7 @@ export const listUnread = query({
 export const getById = query({
   args: { id: v.id("emails") },
   handler: async (ctx, args) => {
+    await requireAuth(ctx);
     return await ctx.db.get(args.id);
   },
 });
@@ -63,6 +76,7 @@ export const getById = query({
 export const getByResendId = query({
   args: { resendId: v.string() },
   handler: async (ctx, args) => {
+    await requireAuth(ctx);
     return await ctx.db
       .query("emails")
       .withIndex("by_resendId", (q) => q.eq("resendId", args.resendId))
@@ -73,6 +87,7 @@ export const getByResendId = query({
 export const getStats = query({
   args: {},
   handler: async (ctx) => {
+    await requireAuth(ctx);
     const allEmails = await ctx.db.query("emails").collect();
 
     // Exclude spam from inbox stats
@@ -99,6 +114,7 @@ export const getStats = query({
 export const getSenderBreakdown = query({
   args: { limit: v.optional(v.number()) },
   handler: async (ctx, args) => {
+    await requireAuth(ctx);
     const limit = args.limit ?? 5;
     const allInboxEmails = await ctx.db
       .query("emails")
@@ -135,6 +151,7 @@ export const getSenderBreakdown = query({
 
 // ============ MUTATIONS ============
 
+// Note: createFromWebhook is called by Resend webhooks, protected by Svix signature verification
 export const createFromWebhook = mutation({
   args: {
     resendId: v.string(),
@@ -207,6 +224,7 @@ export const createSent = mutation({
     timestamp: v.number(),
   },
   handler: async (ctx, args) => {
+    await requireAuth(ctx);
     const emailId = await ctx.db.insert("emails", {
       resendId: args.resendId,
       from: args.from,
@@ -232,6 +250,7 @@ export const createSent = mutation({
 export const markAsRead = mutation({
   args: { id: v.id("emails") },
   handler: async (ctx, args) => {
+    await requireAuth(ctx);
     await ctx.db.patch(args.id, { isRead: true });
   },
 });
@@ -239,6 +258,7 @@ export const markAsRead = mutation({
 export const markAsUnread = mutation({
   args: { id: v.id("emails") },
   handler: async (ctx, args) => {
+    await requireAuth(ctx);
     await ctx.db.patch(args.id, { isRead: false });
   },
 });
@@ -249,6 +269,7 @@ export const markAsSpam = mutation({
     blockSender: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
+    await requireAuth(ctx);
     const email = await ctx.db.get(args.id);
     if (!email) return;
 
@@ -280,6 +301,7 @@ export const markAsSpam = mutation({
 export const markAsNotSpam = mutation({
   args: { id: v.id("emails") },
   handler: async (ctx, args) => {
+    await requireAuth(ctx);
     await ctx.db.patch(args.id, { isSpam: false });
   },
 });
@@ -287,10 +309,12 @@ export const markAsNotSpam = mutation({
 export const deleteEmail = mutation({
   args: { id: v.id("emails") },
   handler: async (ctx, args) => {
+    await requireAuth(ctx);
     await ctx.db.delete(args.id);
   },
 });
 
+// Note: updateDeliveryStatus is called by Resend webhooks, protected by Svix signature verification
 export const updateDeliveryStatus = mutation({
   args: {
     resendId: v.string(),
@@ -353,6 +377,7 @@ export const updateDeliveryStatus = mutation({
 export const listBlockedSenders = query({
   args: {},
   handler: async (ctx) => {
+    await requireAuth(ctx);
     return await ctx.db.query("blockedSenders").collect();
   },
 });
@@ -364,6 +389,7 @@ export const blockSender = mutation({
     reason: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireAuth(ctx);
     const domain = args.email.split("@")[1];
 
     // Check if already blocked
@@ -388,6 +414,7 @@ export const blockSender = mutation({
 export const unblockSender = mutation({
   args: { id: v.id("blockedSenders") },
   handler: async (ctx, args) => {
+    await requireAuth(ctx);
     await ctx.db.delete(args.id);
   },
 });
@@ -395,6 +422,7 @@ export const unblockSender = mutation({
 export const unblockSenderByEmail = mutation({
   args: { email: v.string() },
   handler: async (ctx, args) => {
+    await requireAuth(ctx);
     const blocked = await ctx.db
       .query("blockedSenders")
       .withIndex("by_email", (q) => q.eq("email", args.email))
