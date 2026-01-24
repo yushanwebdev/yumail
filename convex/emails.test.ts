@@ -1,6 +1,6 @@
 import { convexTest } from "convex-test";
 import { describe, it, expect } from "vitest";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import schema from "./schema";
 import { modules } from "./test.setup";
 
@@ -10,7 +10,7 @@ describe("Spam Filtering", () => {
       const t = convexTest(schema, modules);
 
       // Create a test email
-      const emailId = await t.mutation(api.emails.createFromWebhook, {
+      const emailId = await t.mutation(internal.emails.createFromWebhook, {
         resendId: "test-email-1",
         from: { email: "sender@example.com", name: "Sender" },
         to: [{ email: "me@example.com", name: "Me" }],
@@ -31,7 +31,7 @@ describe("Spam Filtering", () => {
       const senderEmail = "spammer@spam.com";
 
       // Create a test email
-      const emailId = await t.mutation(api.emails.createFromWebhook, {
+      const emailId = await t.mutation(internal.emails.createFromWebhook, {
         resendId: "test-email-2",
         from: { email: senderEmail, name: "Spammer" },
         to: [{ email: "me@example.com", name: "Me" }],
@@ -54,7 +54,7 @@ describe("Spam Filtering", () => {
       const senderEmail = "spammer@spam.com";
 
       // Create two emails from same sender
-      const emailId1 = await t.mutation(api.emails.createFromWebhook, {
+      const emailId1 = await t.mutation(internal.emails.createFromWebhook, {
         resendId: "test-email-3",
         from: { email: senderEmail, name: "Spammer" },
         to: [{ email: "me@example.com", name: "Me" }],
@@ -62,7 +62,7 @@ describe("Spam Filtering", () => {
         timestamp: Date.now(),
       });
 
-      const emailId2 = await t.mutation(api.emails.createFromWebhook, {
+      const emailId2 = await t.mutation(internal.emails.createFromWebhook, {
         resendId: "test-email-4",
         from: { email: senderEmail, name: "Spammer" },
         to: [{ email: "me@example.com", name: "Me" }],
@@ -85,7 +85,7 @@ describe("Spam Filtering", () => {
       const t = convexTest(schema, modules);
 
       // Create a test email
-      const emailId = await t.mutation(api.emails.createFromWebhook, {
+      const emailId = await t.mutation(internal.emails.createFromWebhook, {
         resendId: "test-email-5",
         from: { email: "sender@example.com", name: "Sender" },
         to: [{ email: "me@example.com", name: "Me" }],
@@ -108,7 +108,7 @@ describe("Spam Filtering", () => {
       const t = convexTest(schema, modules);
 
       // Create regular and spam emails
-      const regularEmailId = await t.mutation(api.emails.createFromWebhook, {
+      const regularEmailId = await t.mutation(internal.emails.createFromWebhook, {
         resendId: "regular-email",
         from: { email: "friend@example.com", name: "Friend" },
         to: [{ email: "me@example.com", name: "Me" }],
@@ -116,7 +116,7 @@ describe("Spam Filtering", () => {
         timestamp: Date.now(),
       });
 
-      const spamEmailId = await t.mutation(api.emails.createFromWebhook, {
+      const spamEmailId = await t.mutation(internal.emails.createFromWebhook, {
         resendId: "spam-email",
         from: { email: "spammer@spam.com", name: "Spammer" },
         to: [{ email: "me@example.com", name: "Me" }],
@@ -137,7 +137,7 @@ describe("Spam Filtering", () => {
       const t = convexTest(schema, modules);
 
       // Create regular and spam emails
-      await t.mutation(api.emails.createFromWebhook, {
+      await t.mutation(internal.emails.createFromWebhook, {
         resendId: "regular-email-2",
         from: { email: "friend@example.com", name: "Friend" },
         to: [{ email: "me@example.com", name: "Me" }],
@@ -145,7 +145,7 @@ describe("Spam Filtering", () => {
         timestamp: Date.now(),
       });
 
-      const spamEmailId = await t.mutation(api.emails.createFromWebhook, {
+      const spamEmailId = await t.mutation(internal.emails.createFromWebhook, {
         resendId: "spam-email-2",
         from: { email: "spammer@spam.com", name: "Spammer" },
         to: [{ email: "me@example.com", name: "Me" }],
@@ -166,7 +166,7 @@ describe("Spam Filtering", () => {
       const t = convexTest(schema, modules);
 
       // Create regular and spam emails
-      await t.mutation(api.emails.createFromWebhook, {
+      await t.mutation(internal.emails.createFromWebhook, {
         resendId: "regular-email-3",
         from: { email: "friend@example.com", name: "Friend" },
         to: [{ email: "me@example.com", name: "Me" }],
@@ -174,7 +174,7 @@ describe("Spam Filtering", () => {
         timestamp: Date.now(),
       });
 
-      const spamEmailId = await t.mutation(api.emails.createFromWebhook, {
+      const spamEmailId = await t.mutation(internal.emails.createFromWebhook, {
         resendId: "spam-email-3",
         from: { email: "spammer@spam.com", name: "Spammer" },
         to: [{ email: "me@example.com", name: "Me" }],
@@ -196,7 +196,7 @@ describe("Spam Filtering", () => {
       const t = convexTest(schema, modules);
 
       // Create multiple emails, some spam
-      const email1 = await t.mutation(api.emails.createFromWebhook, {
+      await t.mutation(internal.emails.createFromWebhook, {
         resendId: "stat-email-1",
         from: { email: "friend@example.com", name: "Friend" },
         to: [{ email: "me@example.com", name: "Me" }],
@@ -204,7 +204,7 @@ describe("Spam Filtering", () => {
         timestamp: Date.now(),
       });
 
-      const email2 = await t.mutation(api.emails.createFromWebhook, {
+      const email2 = await t.mutation(internal.emails.createFromWebhook, {
         resendId: "stat-email-2",
         from: { email: "spammer1@spam.com", name: "Spammer 1" },
         to: [{ email: "me@example.com", name: "Me" }],
@@ -212,7 +212,7 @@ describe("Spam Filtering", () => {
         timestamp: Date.now() + 1000,
       });
 
-      const email3 = await t.mutation(api.emails.createFromWebhook, {
+      const email3 = await t.mutation(internal.emails.createFromWebhook, {
         resendId: "stat-email-3",
         from: { email: "spammer2@spam.com", name: "Spammer 2" },
         to: [{ email: "me@example.com", name: "Me" }],
@@ -234,7 +234,7 @@ describe("Spam Filtering", () => {
       const t = convexTest(schema, modules);
 
       // Create 3 emails
-      await t.mutation(api.emails.createFromWebhook, {
+      await t.mutation(internal.emails.createFromWebhook, {
         resendId: "stat-email-4",
         from: { email: "friend@example.com", name: "Friend" },
         to: [{ email: "me@example.com", name: "Me" }],
@@ -242,7 +242,7 @@ describe("Spam Filtering", () => {
         timestamp: Date.now(),
       });
 
-      await t.mutation(api.emails.createFromWebhook, {
+      await t.mutation(internal.emails.createFromWebhook, {
         resendId: "stat-email-5",
         from: { email: "friend2@example.com", name: "Friend 2" },
         to: [{ email: "me@example.com", name: "Me" }],
@@ -250,7 +250,7 @@ describe("Spam Filtering", () => {
         timestamp: Date.now() + 1000,
       });
 
-      const spamEmailId = await t.mutation(api.emails.createFromWebhook, {
+      const spamEmailId = await t.mutation(internal.emails.createFromWebhook, {
         resendId: "stat-email-6",
         from: { email: "spammer@spam.com", name: "Spammer" },
         to: [{ email: "me@example.com", name: "Me" }],
@@ -274,7 +274,7 @@ describe("Spam Filtering", () => {
       const blockedEmail = "known-spammer@spam.com";
 
       // First, create an email and block the sender
-      const firstEmailId = await t.mutation(api.emails.createFromWebhook, {
+      const firstEmailId = await t.mutation(internal.emails.createFromWebhook, {
         resendId: "auto-block-email-1",
         from: { email: blockedEmail, name: "Known Spammer" },
         to: [{ email: "me@example.com", name: "Me" }],
@@ -285,7 +285,7 @@ describe("Spam Filtering", () => {
       await t.mutation(api.emails.markAsSpam, { id: firstEmailId, blockSender: true });
 
       // New email from blocked sender should be auto-marked as spam
-      const secondEmailId = await t.mutation(api.emails.createFromWebhook, {
+      const secondEmailId = await t.mutation(internal.emails.createFromWebhook, {
         resendId: "auto-block-email-2",
         from: { email: blockedEmail, name: "Known Spammer" },
         to: [{ email: "me@example.com", name: "Me" }],
@@ -308,7 +308,7 @@ describe("Spam Filtering", () => {
       });
 
       // New email from different address on same domain should be spam
-      const emailId = await t.mutation(api.emails.createFromWebhook, {
+      const emailId = await t.mutation(internal.emails.createFromWebhook, {
         resendId: "domain-block-email",
         from: { email: "otherspammer@baddomain.com", name: "Other Spammer" },
         to: [{ email: "me@example.com", name: "Me" }],
