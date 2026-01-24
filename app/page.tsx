@@ -55,7 +55,7 @@ export default function Dashboard() {
                 Compose
               </Button>
             </Link>
-            <UserButton afterSignOutUrl="/sign-in" />
+            <UserButton />
           </div>
         </div>
 
