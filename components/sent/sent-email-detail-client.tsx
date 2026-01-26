@@ -1,15 +1,16 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import Link from "next/link";
 import { usePreloadedQuery, Preloaded } from "convex/react";
-import { AlertTriangle, Send } from "lucide-react";
+import { AlertTriangle, Send, RefreshCw } from "lucide-react";
 import { api } from "@/convex/_generated/api";
 import { getDisplayName } from "@/lib/utils";
 import { EmailAvatar } from "@/components/email-avatar";
 import { EmailDetailActions } from "@/components/email-detail-actions";
 import { DeliveryStatusBadge } from "@/components/delivery-status-badge";
 import { DeliveryTimeline } from "@/components/delivery-timeline";
+import { Button } from "@/components/ui/button";
 
 function formatDate(timestamp: number): string {
   const date = new Date(timestamp);
@@ -34,8 +35,8 @@ interface SentEmailDetailClientProps {
 }
 
 export function SentEmailDetailClient({ preloadedEmail, children }: SentEmailDetailClientProps) {
-  // This will use the preloaded data immediately and subscribe to real-time updates
   const email = usePreloadedQuery(preloadedEmail);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   if (!email) {
     return (
@@ -46,6 +47,19 @@ export function SentEmailDetailClient({ preloadedEmail, children }: SentEmailDet
   }
 
   const senderDisplayName = getDisplayName(email.from.name, email.from.email);
+
+  const handleRefreshStatus = async () => {
+    setIsRefreshing(true);
+    try {
+      await fetch(`/api/email/refresh-status/${email.resendId}`, {
+        method: "POST",
+      });
+    } catch (error) {
+      console.error("Failed to refresh delivery status:", error);
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 1000);
+    }
+  };
 
   return (
     <>
@@ -116,7 +130,19 @@ export function SentEmailDetailClient({ preloadedEmail, children }: SentEmailDet
               <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
                 Delivery Status
               </h2>
-              <DeliveryStatusBadge status={email.deliveryStatus} variant="badge" />
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRefreshStatus}
+                  disabled={isRefreshing}
+                  className="h-7 gap-1.5 px-2 text-xs"
+                >
+                  <RefreshCw className={`h-3 w-3 ${isRefreshing ? "animate-spin" : ""}`} />
+                  Refresh
+                </Button>
+                <DeliveryStatusBadge status={email.deliveryStatus} variant="badge" />
+              </div>
             </div>
 
             {/* Bounce Alert */}

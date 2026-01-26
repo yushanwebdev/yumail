@@ -374,6 +374,63 @@ export const updateDeliveryStatus = internalMutation({
   },
 });
 
+export const refreshDeliveryStatus = mutation({
+  args: {
+    resendId: v.string(),
+    status: v.union(
+      v.literal("queued"),
+      v.literal("sent"),
+      v.literal("delivered"),
+      v.literal("delayed"),
+      v.literal("bounced"),
+      v.literal("complained")
+    ),
+    timestamp: v.string(),
+    bounceInfo: v.optional(
+      v.object({
+        type: v.union(v.literal("hard"), v.literal("soft")),
+        message: v.optional(v.string()),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    await requireAuth(ctx);
+    const email = await ctx.db
+      .query("emails")
+      .withIndex("by_resendId", (q) => q.eq("resendId", args.resendId))
+      .first();
+
+    if (!email) {
+      throw new Error("Email not found");
+    }
+
+    const timestamp = new Date(args.timestamp).getTime();
+
+    const historyEntry: {
+      status: string;
+      timestamp: number;
+      details?: string;
+    } = {
+      status: args.status,
+      timestamp,
+    };
+
+    if (args.bounceInfo?.message) {
+      historyEntry.details = args.bounceInfo.message;
+    }
+
+    const statusHistory = [...(email.statusHistory || []), historyEntry];
+
+    await ctx.db.patch(email._id, {
+      deliveryStatus: args.status,
+      ...(args.bounceInfo && { bounceInfo: args.bounceInfo }),
+      statusHistory,
+    });
+
+    return email._id;
+  },
+});
+
 // ============ BLOCKED SENDERS ============
 
 export const listBlockedSenders = query({
