@@ -2,12 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
+import { getAuthToken } from "@/lib/convex-server";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export async function POST(request: NextRequest) {
   try {
+    // Get Clerk token for Convex authentication
+    const token = await getAuthToken();
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Create authenticated Convex client
+    const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+    convex.setAuth(token);
+
     const body = await request.json();
     const { from, to, subject, html, text } = body;
 

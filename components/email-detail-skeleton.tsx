@@ -1,25 +1,18 @@
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface EmailDetailSkeletonProps {
-  backLabel?: string;
-  backPath: string;
-}
-
-export function EmailDetailSkeleton({
-  backPath,
-}: EmailDetailSkeletonProps) {
+export function EmailDetailSkeleton() {
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950">
       {/* Sticky Header */}
       <header className="sticky top-0 z-10 border-b border-zinc-200 bg-white/80 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-950/80">
         <div className="mx-auto flex items-center justify-between px-4 py-3 sm:px-12">
-          <a
+          <Link
             href="/"
             className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50"
           >
             YuMail
-          </a>
+          </Link>
           {/* Actions Skeleton */}
           <div className="flex items-center gap-1 sm:gap-2">
             <Skeleton className="h-8 w-8 sm:w-28" />
