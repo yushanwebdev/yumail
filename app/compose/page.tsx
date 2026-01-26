@@ -34,7 +34,7 @@ export default function ComposePage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: `YuMail <${fromEmail}>`,
+          from: `Yushan Fernando <${fromEmail}>`,
           to: to.split(",").map((email) => email.trim()),
           subject: subject.trim(),
           text: body.trim(),
