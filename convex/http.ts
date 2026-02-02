@@ -1,6 +1,6 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
-import { api } from "./_generated/api";
+import { internal } from "./_generated/api";
 import { Webhook } from "svix";
 
 const http = httpRouter();
@@ -94,7 +94,7 @@ http.route({
       const { email_id, from, to, cc, subject, attachments } = event.data;
 
       try {
-        await ctx.runMutation(api.emails.createFromWebhook, {
+        await ctx.runMutation(internal.emails.createFromWebhook, {
           resendId: email_id,
           from: parseEmailAddress(from),
           to: to.map((addr) => parseEmailAddress(addr)),
@@ -162,7 +162,7 @@ http.route({
           }
         : undefined;
 
-      await ctx.runMutation(api.emails.updateDeliveryStatus, {
+      await ctx.runMutation(internal.emails.updateDeliveryStatus, {
         resendId: event.data.email_id,
         status,
         timestamp,

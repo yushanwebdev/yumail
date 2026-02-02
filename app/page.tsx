@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import { UserButton } from "@clerk/nextjs";
 import {
   Inbox,
   Send,
@@ -54,6 +55,7 @@ export default function Dashboard() {
                 Compose
               </Button>
             </Link>
+            <UserButton />
           </div>
         </div>
 

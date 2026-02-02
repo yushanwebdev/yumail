@@ -1,6 +1,6 @@
 import { connection } from "next/server";
-import { preloadQuery } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
+import { preloadQuery } from "@/lib/convex-server";
 import {
   InboxCount,
   SentCount,
@@ -12,31 +12,31 @@ import { TopSendersSection } from "./top-senders-section";
 
 export async function InboxCountLoader() {
   await connection();
-  const preloadedStats = await preloadQuery(api.emails.getStats);
+  const preloadedStats = await preloadQuery(api.emails.getStats, {});
   return <InboxCount preloadedStats={preloadedStats} />;
 }
 
 export async function SentCountLoader() {
   await connection();
-  const preloadedStats = await preloadQuery(api.emails.getStats);
+  const preloadedStats = await preloadQuery(api.emails.getStats, {});
   return <SentCount preloadedStats={preloadedStats} />;
 }
 
 export async function UnreadCountLoader() {
   await connection();
-  const preloadedStats = await preloadQuery(api.emails.getStats);
+  const preloadedStats = await preloadQuery(api.emails.getStats, {});
   return <UnreadCount preloadedStats={preloadedStats} />;
 }
 
 export async function TodayCountLoader() {
   await connection();
-  const preloadedStats = await preloadQuery(api.emails.getStats);
+  const preloadedStats = await preloadQuery(api.emails.getStats, {});
   return <TodayCount preloadedStats={preloadedStats} />;
 }
 
 export async function RecentUnreadLoader() {
   await connection();
-  const preloadedUnread = await preloadQuery(api.emails.listUnread);
+  const preloadedUnread = await preloadQuery(api.emails.listUnread, {});
   return <RecentUnreadSection preloadedUnread={preloadedUnread} />;
 }
 
