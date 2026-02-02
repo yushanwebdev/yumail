@@ -104,13 +104,13 @@ export function RecentUnreadSection({
                   </div>
                 </div>
                 <div
-                  className="absolute right-4 top-1/2 flex -translate-y-1/2 gap-1 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 transition-opacity"
+                  className="absolute right-2 top-1/2 flex -translate-y-1/2 gap-0.5 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 transition-opacity"
                   onClick={(e) => e.preventDefault()}
                 >
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    className="h-8 w-8 bg-white shadow-sm hover:bg-blue-50 hover:text-blue-700 dark:bg-zinc-900 dark:hover:bg-blue-950/50 dark:hover:text-blue-400"
+                    className="h-7 w-7 bg-white shadow-sm hover:bg-blue-50 hover:text-blue-700 dark:bg-zinc-900 dark:hover:bg-blue-950/50 dark:hover:text-blue-400 md:h-8 md:w-8"
                     onClick={(e) => {
                       e.preventDefault();
                       handleDetectAndCopy(email.subject);
@@ -118,19 +118,19 @@ export function RecentUnreadSection({
                     aria-label="Detect and copy verification code"
                     title="Detect and copy verification code"
                   >
-                    <ScanText className="h-4 w-4" />
+                    <ScanText className="h-3.5 w-3.5 md:h-4 md:w-4" />
                   </Button>
                   <Button
                     variant="ghost"
-                    size="sm"
-                    className="gap-1.5 bg-white shadow-sm hover:bg-emerald-50 hover:text-emerald-700 dark:bg-zinc-900 dark:hover:bg-emerald-950/50 dark:hover:text-emerald-400"
+                    size="icon-sm"
+                    className="h-7 w-7 bg-white shadow-sm hover:bg-emerald-50 hover:text-emerald-700 dark:bg-zinc-900 dark:hover:bg-emerald-950/50 dark:hover:text-emerald-400 md:h-auto md:w-auto md:gap-1.5 md:px-3"
                     onClick={(e) => {
                       e.preventDefault();
                       markAsRead({ id: email._id });
                     }}
                   >
                     <Check className="h-3.5 w-3.5" />
-                    Mark read
+                    <span className="hidden text-xs md:inline">Mark read</span>
                   </Button>
                 </div>
               </div>

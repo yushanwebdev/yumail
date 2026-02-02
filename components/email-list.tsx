@@ -174,7 +174,7 @@ export function EmailList({ emails, showSender = true, emptyMessage }: EmailList
               </div>
 
               <div
-                className="flex shrink-0 items-center gap-1 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 transition-opacity"
+                className="flex shrink-0 items-center gap-0.5 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 transition-opacity"
                 onClick={(e) => e.preventDefault()}
               >
                 {email.folder === "inbox" && (
@@ -182,7 +182,7 @@ export function EmailList({ emails, showSender = true, emptyMessage }: EmailList
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8"
+                      className="h-7 w-7 md:h-8 md:w-8"
                       onClick={(e) => {
                         e.preventDefault();
                         handleToggleRead(email);
@@ -191,16 +191,16 @@ export function EmailList({ emails, showSender = true, emptyMessage }: EmailList
                       title={email.isRead ? "Mark as unread" : "Mark as read"}
                     >
                       {email.isRead ? (
-                        <Mail className="h-4 w-4" />
+                        <Mail className="h-3.5 w-3.5 md:h-4 md:w-4" />
                       ) : (
-                        <MailOpen className="h-4 w-4" />
+                        <MailOpen className="h-3.5 w-3.5 md:h-4 md:w-4" />
                       )}
                     </Button>
                     {/* Verification code detection and copy button */}
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8"
+                      className="h-7 w-7 md:h-8 md:w-8"
                       onClick={(e) => {
                         e.preventDefault();
                         handleDetectAndCopy(email.subject);
@@ -209,14 +209,14 @@ export function EmailList({ emails, showSender = true, emptyMessage }: EmailList
                       title="Detect and copy verification code"
                       data-detect-code-btn={email._id}
                     >
-                      <ScanText className="h-4 w-4" />
+                      <ScanText className="h-3.5 w-3.5 md:h-4 md:w-4" />
                     </Button>
                   </>
                 )}
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/50"
+                  className="h-7 w-7 text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/50 md:h-8 md:w-8"
                   onClick={(e) => {
                     e.preventDefault();
                     handleDelete(email._id);
@@ -224,7 +224,7 @@ export function EmailList({ emails, showSender = true, emptyMessage }: EmailList
                   aria-label="Delete email"
                   title="Delete"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-3.5 w-3.5 md:h-4 md:w-4" />
                 </Button>
               </div>
             </div>
