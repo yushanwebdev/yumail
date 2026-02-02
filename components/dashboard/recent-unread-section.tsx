@@ -104,7 +104,7 @@ export function RecentUnreadSection({
                   </div>
                 </div>
                 <div
-                  className="absolute right-4 top-1/2 flex -translate-y-1/2 gap-1 opacity-0 transition-opacity group-hover:opacity-100"
+                  className="absolute right-4 top-1/2 flex -translate-y-1/2 gap-1"
                   onClick={(e) => e.preventDefault()}
                 >
                   <Button
