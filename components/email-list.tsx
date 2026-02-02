@@ -174,7 +174,7 @@ export function EmailList({ emails, showSender = true, emptyMessage }: EmailList
               </div>
 
               <div
-                className="flex shrink-0 items-center gap-1"
+                className="flex shrink-0 items-center gap-1 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 transition-opacity"
                 onClick={(e) => e.preventDefault()}
               >
                 {email.folder === "inbox" && (
