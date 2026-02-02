@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import { ConvexClientProvider } from "@/lib/convex";
+import { Toaster } from "@/components/ui/toaster";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,6 +33,7 @@ export default function RootLayout({
         <Suspense>
           <ConvexClientProvider>{children}</ConvexClientProvider>
         </Suspense>
+        <Toaster />
       </body>
     </html>
   );

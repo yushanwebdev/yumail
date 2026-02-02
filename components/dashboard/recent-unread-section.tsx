@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { Mail, Check, Sparkles } from "lucide-react";
+import { Mail, Check, Sparkles, ScanText } from "lucide-react";
+import { toast } from "sonner";
 import { Preloaded, usePreloadedQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { EmailAvatar } from "@/components/email-avatar";
 import { EmptyState } from "@/components/empty-state";
 import { getDisplayName } from "@/lib/utils";
+import { detectVerificationCode } from "@/lib/verificationCodeDetector";
 
 export function RecentUnreadSection({
   preloadedUnread,
@@ -22,6 +24,46 @@ export function RecentUnreadSection({
     const month = date.toLocaleDateString("en-US", { month: "short" });
     const day = date.getDate();
     return { month, day };
+  };
+
+  // Detect and copy verification code directly
+  const handleDetectAndCopy = async (subject: string) => {
+    const code = detectVerificationCode(subject);
+
+    if (!code) {
+      toast.error("No verification code found", {
+        description: "No code detected in the email subject",
+        duration: 2000,
+      });
+      return;
+    }
+
+    try {
+      // Copy to clipboard
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(code);
+      } else {
+        // Fallback for older browsers
+        const textArea = document.createElement("textarea");
+        textArea.value = code;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
+
+      toast.success(`Code ${code} copied to clipboard`, {
+        duration: 2000,
+      });
+    } catch (error) {
+      console.error("Failed to copy code:", error);
+      toast.error("Failed to copy code", {
+        description: "Unable to copy to clipboard",
+        duration: 3000,
+      });
+    }
   };
 
   if (unreadEmails.length === 0) {
@@ -61,18 +103,36 @@ export function RecentUnreadSection({
                     {email.subject}
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 gap-1.5 bg-white opacity-0 shadow-sm transition-opacity hover:bg-emerald-50 hover:text-emerald-700 group-hover:opacity-100 dark:bg-zinc-900 dark:hover:bg-emerald-950/50 dark:hover:text-emerald-400"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    markAsRead({ id: email._id });
-                  }}
+                <div
+                  className="absolute right-2 top-1/2 flex -translate-y-1/2 gap-0.5 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 transition-opacity"
+                  onClick={(e) => e.preventDefault()}
                 >
-                  <Check className="h-3.5 w-3.5" />
-                  Mark read
-                </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="h-7 w-7 bg-white shadow-sm hover:bg-blue-50 hover:text-blue-700 dark:bg-zinc-900 dark:hover:bg-blue-950/50 dark:hover:text-blue-400 md:h-8 md:w-8"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleDetectAndCopy(email.subject);
+                    }}
+                    aria-label="Detect and copy verification code"
+                    title="Detect and copy verification code"
+                  >
+                    <ScanText className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="h-7 w-7 bg-white shadow-sm hover:bg-emerald-50 hover:text-emerald-700 dark:bg-zinc-900 dark:hover:bg-emerald-950/50 dark:hover:text-emerald-400 md:h-auto md:w-auto md:gap-1.5 md:px-3"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      markAsRead({ id: email._id });
+                    }}
+                  >
+                    <Check className="h-3.5 w-3.5" />
+                    <span className="hidden text-xs md:inline">Mark read</span>
+                  </Button>
+                </div>
               </div>
             </Link>
           );

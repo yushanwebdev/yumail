@@ -6,7 +6,9 @@ import {
   MailOpen,
   Trash2,
   Circle,
+  ScanText,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { DeliveryStatusBadge } from "@/components/delivery-status-badge";
 import { EmailAvatar } from "@/components/email-avatar";
@@ -14,6 +16,7 @@ import { formatRelativeTime, getDisplayName, cn } from "@/lib/utils";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Doc, Id } from "@/convex/_generated/dataModel";
+import { detectVerificationCode } from "@/lib/verificationCodeDetector";
 
 type ConvexEmail = Doc<"emails">;
 
@@ -40,6 +43,46 @@ export function EmailList({ emails, showSender = true, emptyMessage }: EmailList
       markAsUnread({ id: email._id });
     } else {
       markAsRead({ id: email._id });
+    }
+  };
+
+  // Detect and copy verification code directly
+  const handleDetectAndCopy = async (subject: string) => {
+    const code = detectVerificationCode(subject);
+
+    if (!code) {
+      toast.error("No verification code found", {
+        description: "No code detected in the email subject",
+        duration: 2000,
+      });
+      return;
+    }
+
+    try {
+      // Copy to clipboard
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(code);
+      } else {
+        // Fallback for older browsers
+        const textArea = document.createElement("textarea");
+        textArea.value = code;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
+
+      toast.success(`Code ${code} copied to clipboard`, {
+        duration: 2000,
+      });
+    } catch (error) {
+      console.error("Failed to copy code:", error);
+      toast.error("Failed to copy code", {
+        description: "Unable to copy to clipboard",
+        duration: 3000,
+      });
     }
   };
 
@@ -131,38 +174,57 @@ export function EmailList({ emails, showSender = true, emptyMessage }: EmailList
               </div>
 
               <div
-                className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100"
+                className="flex shrink-0 items-center gap-0.5 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 transition-opacity"
                 onClick={(e) => e.preventDefault()}
               >
                 {email.folder === "inbox" && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleToggleRead(email);
-                    }}
-                    title={email.isRead ? "Mark as unread" : "Mark as read"}
-                  >
-                    {email.isRead ? (
-                      <Mail className="h-4 w-4" />
-                    ) : (
-                      <MailOpen className="h-4 w-4" />
-                    )}
-                  </Button>
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 md:h-8 md:w-8"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleToggleRead(email);
+                      }}
+                      aria-label={email.isRead ? "Mark as unread" : "Mark as read"}
+                      title={email.isRead ? "Mark as unread" : "Mark as read"}
+                    >
+                      {email.isRead ? (
+                        <Mail className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                      ) : (
+                        <MailOpen className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                      )}
+                    </Button>
+                    {/* Verification code detection and copy button */}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 md:h-8 md:w-8"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleDetectAndCopy(email.subject);
+                      }}
+                      aria-label="Detect and copy verification code"
+                      title="Detect and copy verification code"
+                      data-detect-code-btn={email._id}
+                    >
+                      <ScanText className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                    </Button>
+                  </>
                 )}
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/50"
+                  className="h-7 w-7 text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/50 md:h-8 md:w-8"
                   onClick={(e) => {
                     e.preventDefault();
                     handleDelete(email._id);
                   }}
+                  aria-label="Delete email"
                   title="Delete"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-3.5 w-3.5 md:h-4 md:w-4" />
                 </Button>
               </div>
             </div>
