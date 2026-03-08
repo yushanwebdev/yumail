@@ -6,11 +6,10 @@ export function InboxHeader() {
     <View style={styles.container}>
       <View style={styles.metaRow}>
         <Text style={styles.metaText}>Primary Account</Text>
-        <Text style={styles.metaText}>London, UK</Text>
         <Text style={styles.metaText}>June 14, 2024</Text>
       </View>
       <Text style={styles.title}>
-        {'Inbox* — A collection\nof urgent matters.'}
+        {'Inbox* —\nA collection\nof urgent\nmatters.'}
       </Text>
     </View>
   );
@@ -18,11 +17,8 @@ export function InboxHeader() {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: spacing.lg,
-    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
     paddingBottom: spacing.md,
-    backgroundColor: colors.paper,
-    zIndex: 10,
   },
   metaRow: {
     flexDirection: 'row',
@@ -30,7 +26,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.inkPrimary,
     paddingTop: spacing.xs,
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
   },
   metaText: {
     fontFamily: fonts.utility,
@@ -41,11 +37,10 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: fonts.display,
-    fontSize: 64,
+    fontSize: 40,
     fontWeight: '400',
-    lineHeight: 64 * 0.9,
-    letterSpacing: -0.02 * 64,
+    lineHeight: 40 * 0.95,
+    letterSpacing: -0.02 * 40,
     color: colors.inkPrimary,
-    maxWidth: 600,
   },
 });

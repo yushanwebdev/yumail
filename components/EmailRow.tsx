@@ -8,65 +8,52 @@ type EmailRowProps = {
 
 export function EmailRow({ email }: EmailRowProps) {
   return (
-    <Pressable
-      style={({ hovered }) => [
-        styles.row,
-        hovered && styles.rowHover,
-      ]}
-    >
-      {({ hovered }) => (
-        <>
-          <View style={styles.colStatus}>
-            <Text style={[styles.statusDot, !email.unread && styles.statusDotRead]}>*</Text>
-          </View>
-          <View style={styles.colSender}>
-            <Text style={[styles.senderText, email.unread && styles.senderUnread]} numberOfLines={1}>
-              {email.sender}
-            </Text>
-          </View>
-          <View style={styles.colContent}>
-            <Text numberOfLines={1}>
-              <Text style={[styles.subject, !email.unread && styles.subjectRead, hovered && styles.subjectHover]}>
-                {email.subject}
-              </Text>
-              <Text style={styles.snippet}> {email.snippet}</Text>
-            </Text>
-          </View>
-          <View style={styles.colDate}>
-            <Text style={styles.dateText}>{email.date}</Text>
-          </View>
-        </>
-      )}
+    <Pressable style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}>
+      <View style={styles.topLine}>
+        <View style={styles.senderRow}>
+          {email.unread && <Text style={styles.statusDot}>*</Text>}
+          <Text style={[styles.senderText, email.unread && styles.senderUnread]} numberOfLines={1}>
+            {email.sender}
+          </Text>
+        </View>
+        <Text style={styles.dateText}>{email.date}</Text>
+      </View>
+      <Text style={[styles.subject, !email.unread && styles.subjectRead]} numberOfLines={1}>
+        {email.subject}
+      </Text>
+      <Text style={styles.snippet} numberOfLines={1}>
+        {email.snippet}
+      </Text>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   row: {
-    flexDirection: 'row',
     paddingVertical: spacing.sm,
-    alignItems: 'baseline',
-    borderBottomWidth: 1,
-    borderBottomColor: 'transparent',
-  },
-  rowHover: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.divider,
   },
-  colStatus: {
-    width: 24,
+  rowPressed: {
+    opacity: 0.6,
+  },
+  topLine: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  senderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    flex: 1,
   },
   statusDot: {
     fontFamily: fonts.display,
-    fontSize: 16,
+    fontSize: 14,
     color: colors.inkPrimary,
-    lineHeight: 16,
-  },
-  statusDotRead: {
-    opacity: 0,
-  },
-  colSender: {
-    width: 200,
-    paddingRight: spacing.md,
+    lineHeight: 14,
   },
   senderText: {
     fontFamily: fonts.utility,
@@ -79,37 +66,26 @@ const styles = StyleSheet.create({
     fontFamily: fonts.utilitySemiBold,
     fontWeight: '600',
   },
-  colContent: {
-    flex: 1,
-    paddingRight: spacing.md,
-  },
-  subject: {
-    fontFamily: fonts.display,
-    fontSize: 18,
-    fontWeight: '400',
-    color: colors.inkPrimary,
-  },
-  subjectRead: {
-    opacity: 0.8,
-  },
-  subjectHover: {
-    color: colors.accentBlue,
-  },
-  snippet: {
-    fontFamily: fonts.utility,
-    fontSize: 13,
-    color: colors.inkSecondary,
-    fontWeight: '400',
-  },
-  colDate: {
-    width: 100,
-    alignItems: 'flex-end',
-  },
   dateText: {
     fontFamily: fonts.utility,
     fontSize: 10,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+    color: colors.inkSecondary,
+  },
+  subject: {
+    fontFamily: fonts.display,
+    fontSize: 17,
+    fontWeight: '400',
+    color: colors.inkPrimary,
+    marginBottom: 2,
+  },
+  subjectRead: {
+    opacity: 0.8,
+  },
+  snippet: {
+    fontFamily: fonts.utility,
+    fontSize: 13,
     color: colors.inkSecondary,
   },
 });
