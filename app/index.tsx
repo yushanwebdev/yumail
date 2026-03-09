@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PlatformColor } from 'react-native';
 import {
   Host,
   List,
@@ -19,6 +20,7 @@ import {
   frame,
   background,
   padding,
+  textFieldStyle,
 } from '@expo/ui/swift-ui/modifiers';
 import { emails } from '@/constants/emails';
 
@@ -34,7 +36,7 @@ export default function InboxScreen() {
     : emails;
 
   return (
-    <Host style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+    <Host style={{ flex: 1, backgroundColor: PlatformColor('systemBackground') }}>
       <List
         modifiers={[
           listStyle('plain'),
@@ -52,29 +54,32 @@ export default function InboxScreen() {
           <Text
             modifiers={[
               font({ size: 34, weight: 'bold' }),
-              foregroundStyle('#202646'),
+              foregroundStyle('primary'),
             ]}
           >
             Inbox
           </Text>
           <HStack
+            spacing={6}
             modifiers={[
               frame({ maxWidth: Infinity }),
-              background('#F2F2F7', { shape: 'roundedRectangle', cornerRadius: 10 }),
-              padding({ horizontal: 8, vertical: 8 }),
+              padding({ horizontal: 12, vertical: 10 }),
+              background(PlatformColor('tertiarySystemFill'), { shape: 'roundedRectangle', cornerRadius: 12 }),
             ]}
           >
             <Image
               systemName="magnifyingglass"
-              size={16}
-              color="#8E8E93"
+              size={15}
+              color={PlatformColor('placeholderText')}
             />
             <TextField
-              placeholder="Search"
+              placeholder="Search emails"
               defaultValue=""
               onChangeText={setSearch}
               modifiers={[
-                font({ size: 17 }),
+                font({ size: 16 }),
+                foregroundStyle('primary'),
+                textFieldStyle('plain'),
                 frame({ maxWidth: Infinity }),
               ]}
             />
@@ -96,7 +101,7 @@ export default function InboxScreen() {
             <ZStack
               modifiers={[
                 frame({ width: 56, height: 56 }),
-                background(email.unread ? '#D1E7DD' : '#E8E8ED', {
+                background(email.unread ? '#D1E7DD' : PlatformColor('tertiarySystemFill'), {
                   shape: 'circle',
                 }),
               ]}
@@ -104,7 +109,7 @@ export default function InboxScreen() {
               <Image
                 systemName="person.fill"
                 size={24}
-                color={email.unread ? '#198754' : '#8E8E93'}
+                color={email.unread ? PlatformColor('systemGreen') : PlatformColor('secondaryLabel')}
               />
             </ZStack>
 
@@ -114,7 +119,7 @@ export default function InboxScreen() {
                 <Text
                   modifiers={[
                     font({ size: 17, weight: email.unread ? 'semibold' : 'regular' }),
-                    foregroundStyle('#202646'),
+                    foregroundStyle('primary'),
                     lineLimit(1),
                   ]}
                 >
@@ -124,7 +129,7 @@ export default function InboxScreen() {
                 <Text
                   modifiers={[
                     font({ size: 15 }),
-                    foregroundStyle(email.unread ? '#198754' : '#8E8E93'),
+                    foregroundStyle(email.unread ? 'green' : 'secondary'),
                   ]}
                 >
                   {email.date}
@@ -133,7 +138,7 @@ export default function InboxScreen() {
               <Text
                 modifiers={[
                   font({ size: 15 }),
-                  foregroundStyle('#8E8E93'),
+                  foregroundStyle('secondary'),
                   lineLimit(2),
                 ]}
               >
@@ -146,13 +151,13 @@ export default function InboxScreen() {
               <ZStack
                 modifiers={[
                   frame({ width: 22, height: 22 }),
-                  background('#198754', { shape: 'circle' }),
+                  background('green', { shape: 'circle' }),
                 ]}
               >
                 <Text
                   modifiers={[
                     font({ size: 13, weight: 'semibold' }),
-                    foregroundStyle('#FFFFFF'),
+                    foregroundStyle('white'),
                   ]}
                 >
                   1
