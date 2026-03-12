@@ -2,10 +2,12 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { NavRail } from '@/components/NavRail';
 import { InboxHeader } from '@/components/InboxHeader';
 import { EmailRow } from '@/components/EmailRow';
-import { emails } from '@/constants/emails';
+import { useEmails } from '@/hooks/useEmails';
 import { colors, spacing } from '@/constants/theme';
 
 export default function InboxScreen() {
+  const { emails } = useEmails();
+
   return (
     <View style={styles.shell}>
       <NavRail />

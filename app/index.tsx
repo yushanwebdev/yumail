@@ -20,10 +20,11 @@ import {
   background,
   padding,
 } from '@expo/ui/swift-ui/modifiers';
-import { emails } from '@/constants/emails';
+import { useEmails } from '@/hooks/useEmails';
 
 export default function InboxScreen() {
   const [search, setSearch] = useState('');
+  const { emails } = useEmails();
 
   const filtered = search
     ? emails.filter(
