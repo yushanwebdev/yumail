@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { emails as mockEmails, type Email } from '@/constants/emails';
 
+const RESEND_API_KEY = process.env.EXPO_PUBLIC_RESEND_API_KEY;
+const RESEND_BASE_URL = 'https://api.resend.com/emails/receiving';
+
 type ResendEmail = {
   id: string;
   from: string;
@@ -19,6 +22,16 @@ type ResendListResponse = {
   has_more: boolean;
   data: ResendEmail[];
 };
+
+async function fetchResendEmails(limit: number, after?: string): Promise<ResendListResponse> {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (after) params.set('after', after);
+  const res = await fetch(`${RESEND_BASE_URL}?${params}`, {
+    headers: { Authorization: `Bearer ${RESEND_API_KEY}` },
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
 
 function extractSenderName(from: string): string {
   // "Name <email@example.com>" → "Name"
@@ -95,9 +108,7 @@ export function useEmails() {
     setError(null);
     cursorRef.current = null;
     try {
-      const res = await fetch('/api/emails?limit=20');
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const body: ResendListResponse = await res.json();
+      const body = await fetchResendEmails(20);
       if (body.data && body.data.length > 0) {
         setEmails(body.data.map(toEmail));
         cursorRef.current = body.data[body.data.length - 1].id;
@@ -116,9 +127,7 @@ export function useEmails() {
     if (loadingMore || !hasMore || !cursorRef.current) return;
     setLoadingMore(true);
     try {
-      const res = await fetch(`/api/emails?limit=20&after=${cursorRef.current}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const body: ResendListResponse = await res.json();
+      const body = await fetchResendEmails(20, cursorRef.current!);
       if (body.data && body.data.length > 0) {
         setEmails((prev) => [...prev, ...body.data.map(toEmail)]);
         cursorRef.current = body.data[body.data.length - 1].id;
