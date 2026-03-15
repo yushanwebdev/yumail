@@ -91,10 +91,7 @@ function EmailRow({ email, onPress }: { email: Email; onPress: () => void }) {
       </View>
       <View style={styles.rowContent}>
         <View style={styles.rowHeader}>
-          <Text
-            style={[styles.sender, email.unread && styles.senderUnread]}
-            numberOfLines={1}
-          >
+          <Text style={[styles.sender]} numberOfLines={1}>
             {local}
             <Text style={styles.senderDomain}>{domain}</Text>
           </Text>
@@ -250,8 +247,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#202646",
     flexShrink: 1,
-  },
-  senderUnread: {
     fontWeight: "600",
   },
   senderDomain: {
