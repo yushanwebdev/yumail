@@ -1,5 +1,5 @@
 import type { Email } from "@/constants/emails";
-import { useEmails } from "@/hooks/useEmails";
+import { formatBucket, useEmails } from "@/hooks/useEmails";
 import { useReadStatusStore } from "@/stores/useReadStatusStore";
 import { LegendList } from "@legendapp/list";
 import { useNavigation, useRouter } from "expo-router";
@@ -16,32 +16,37 @@ type ListItem =
   | { type: "header"; title: string }
   | { type: "email"; email: Email };
 
+function dayOfYear(date: Date): number {
+  const start = new Date(date.getFullYear(), 0, 0);
+  return Math.floor((date.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+}
+
 function groupByDate(emails: Email[]): ListItem[] {
-  const groups: { title: string; emails: Email[] }[] = [];
+  const groups: { bucket: string; createdAt: string; emails: Email[] }[] = [];
   const seen = new Map<string, number>();
 
   for (const email of emails) {
-    let bucket: string;
-    if (/AM|PM/i.test(email.date)) {
-      bucket = "Today";
-    } else if (email.date === "Yesterday") {
-      bucket = "Yesterday";
-    } else {
-      bucket = email.date;
-    }
+    const bucket = email.createdAt ? formatBucket(email.createdAt) : email.date;
 
     const idx = seen.get(bucket);
     if (idx !== undefined) {
       groups[idx].emails.push(email);
     } else {
       seen.set(bucket, groups.length);
-      groups.push({ title: bucket, emails: [email] });
+      groups.push({ bucket, createdAt: email.createdAt ?? "", emails: [email] });
     }
   }
 
   const items: ListItem[] = [];
   for (const group of groups) {
-    items.push({ type: "header", title: group.title });
+    let title = group.bucket;
+    if (group.createdAt) {
+      const date = new Date(group.createdAt.replace(" ", "T").replace(/\+(\d{2})$/, "+$1:00"));
+      if (!isNaN(date.getTime())) {
+        title = `${group.bucket} · Day ${dayOfYear(date)}`;
+      }
+    }
+    items.push({ type: "header", title });
     for (const email of group.emails) {
       items.push({ type: "email", email });
     }

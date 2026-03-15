@@ -5,6 +5,7 @@ export type Email = {
   subject: string;
   snippet: string;
   date: string;
+  createdAt?: string;
   unread: boolean;
 };
 

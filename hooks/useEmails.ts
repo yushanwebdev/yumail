@@ -64,24 +64,29 @@ function formatDate(dateStr: string): string {
   const date = parseDate(dateStr);
   if (!date) return '';
 
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const h = hours % 12 || 12;
+  const m = minutes.toString().padStart(2, '0');
+  return `${h}:${m} ${ampm}`;
+}
+
+export function formatBucket(dateStr: string): string {
+  const date = parseDate(dateStr);
+  if (!date) return '';
+
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const diffDays = Math.round((startOfToday.getTime() - startOfDay.getTime()) / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 0) {
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    const h = hours % 12 || 12;
-    const m = minutes.toString().padStart(2, '0');
-    return `${h}:${m} ${ampm}`;
-  }
-  if (diffDays === 1) {
-    return 'Yesterday';
-  }
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return `${months[date.getMonth()]} ${date.getDate()}`;
+  return `${days[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}`;
 }
 
 function toEmail(resendEmail: ResendEmail): Email {
@@ -92,6 +97,7 @@ function toEmail(resendEmail: ResendEmail): Email {
     subject: resendEmail.subject || '(No subject)',
     snippet: '',
     date: formatDate(resendEmail.created_at),
+    createdAt: resendEmail.created_at,
     unread: true,
   };
 }
