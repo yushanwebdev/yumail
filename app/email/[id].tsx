@@ -1,6 +1,7 @@
 import { useEmailDetail } from '@/hooks/useEmailDetail';
+import { useReadStatusStore } from '@/stores/useReadStatusStore';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
-import { useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Platform,
@@ -68,6 +69,8 @@ export default function EmailDetailScreen() {
   const { width } = useWindowDimensions();
   const [webViewHeight, setWebViewHeight] = useState(300);
 
+  const markAsRead = useReadStatusStore((s) => s.markAsRead);
+
   useLayoutEffect(() => {
     navigation.setOptions({
       title: '',
@@ -76,6 +79,12 @@ export default function EmailDetailScreen() {
       headerShadowVisible: false,
     });
   }, [navigation]);
+
+  useEffect(() => {
+    if (email && id) {
+      markAsRead(id);
+    }
+  }, [email, id, markAsRead]);
 
   if (loading) {
     return <ActivityIndicator style={styles.loader} size="large" color="#198754" />;

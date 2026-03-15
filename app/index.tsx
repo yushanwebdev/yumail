@@ -1,8 +1,9 @@
 import type { Email } from "@/constants/emails";
 import { useEmails } from "@/hooks/useEmails";
+import { useReadStatusStore } from "@/stores/useReadStatusStore";
 import { LegendList } from "@legendapp/list";
 import { useNavigation, useRouter } from "expo-router";
-import { useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -67,6 +68,7 @@ export default function InboxScreen() {
   const navigation = useNavigation();
   const router = useRouter();
   const { emails, loading, loadingMore, hasMore, fetchMore } = useEmails();
+  const readIds = useReadStatusStore((s) => s.readIds);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -88,13 +90,18 @@ export default function InboxScreen() {
     });
   }, [navigation]);
 
+  const emailsWithReadStatus = useMemo(
+    () => emails.map((e) => ({ ...e, unread: !readIds.includes(e.id) })),
+    [emails, readIds],
+  );
+
   const filtered = search
-    ? emails.filter(
+    ? emailsWithReadStatus.filter(
         (e) =>
           e.sender.toLowerCase().includes(search.toLowerCase()) ||
           e.subject.toLowerCase().includes(search.toLowerCase()),
       )
-    : emails;
+    : emailsWithReadStatus;
 
   if (loading) {
     return (
