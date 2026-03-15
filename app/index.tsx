@@ -12,12 +12,59 @@ import {
   View,
 } from "react-native";
 
+type ListItem =
+  | { type: "header"; title: string }
+  | { type: "email"; email: Email };
+
+function groupByDate(emails: Email[]): ListItem[] {
+  const groups: { title: string; emails: Email[] }[] = [];
+  const seen = new Map<string, number>();
+
+  for (const email of emails) {
+    let bucket: string;
+    if (/AM|PM/i.test(email.date)) {
+      bucket = "Today";
+    } else if (email.date === "Yesterday") {
+      bucket = "Yesterday";
+    } else {
+      bucket = email.date;
+    }
+
+    const idx = seen.get(bucket);
+    if (idx !== undefined) {
+      groups[idx].emails.push(email);
+    } else {
+      seen.set(bucket, groups.length);
+      groups.push({ title: bucket, emails: [email] });
+    }
+  }
+
+  const items: ListItem[] = [];
+  for (const group of groups) {
+    items.push({ type: "header", title: group.title });
+    for (const email of group.emails) {
+      items.push({ type: "email", email });
+    }
+  }
+  return items;
+}
+
 function extractEmail(from: string): { local: string; domain: string } {
   const match = from.match(/<(.+?)>$/);
   const addr = match ? match[1] : from;
   const atIndex = addr.indexOf("@");
   if (atIndex === -1) return { local: addr, domain: "" };
   return { local: addr.slice(0, atIndex), domain: addr.slice(atIndex) };
+}
+
+function SectionHeader({ title }: { title: string }) {
+  return (
+    <View style={styles.headerRow}>
+      <View style={styles.headerLine} />
+      <Text style={styles.headerTitle}>{title.toUpperCase()}</Text>
+      <View style={styles.headerLine} />
+    </View>
+  );
 }
 
 function EmailRow({
@@ -34,6 +81,15 @@ function EmailRow({
       onPress={onPress}
       style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
     >
+      <View style={styles.timelineCol}>
+        <View style={styles.timelineLine} />
+        <View
+          style={[
+            styles.dot,
+            email.unread ? styles.dotUnread : styles.dotRead,
+          ]}
+        />
+      </View>
       <View style={styles.rowContent}>
         <View style={styles.rowHeader}>
           <Text
@@ -95,6 +151,8 @@ export default function InboxScreen() {
       )
     : emailsWithReadStatus;
 
+  const grouped = useMemo(() => groupByDate(filtered), [filtered]);
+
   if (loading) {
     return (
       <ActivityIndicator style={styles.loader} size="large" color="#198754" />
@@ -103,15 +161,22 @@ export default function InboxScreen() {
 
   return (
     <LegendList
-      data={filtered}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) => (
-        <EmailRow
-          email={item}
-          onPress={() => router.push(`/email/${item.id}`)}
-        />
-      )}
-      ItemSeparatorComponent={() => <View style={styles.separator} />}
+      data={grouped}
+      keyExtractor={(item) =>
+        item.type === "header" ? `header-${item.title}` : item.email.id
+      }
+      getItemType={(item) => item.type}
+      renderItem={({ item }) => {
+        if (item.type === "header") {
+          return <SectionHeader title={item.title} />;
+        }
+        return (
+          <EmailRow
+            email={item.email}
+            onPress={() => router.push(`/email/${item.email.id}`)}
+          />
+        );
+      }}
       estimatedItemSize={80}
       onEndReached={!search ? fetchMore : undefined}
       onEndReachedThreshold={0.5}
@@ -130,13 +195,62 @@ export default function InboxScreen() {
   );
 }
 
+const TIMELINE_WIDTH = 28;
+const DOT_SIZE = 8;
+const LINE_WIDTH = 1.5;
+
 const styles = StyleSheet.create({
+  timelineCol: {
+    width: TIMELINE_WIDTH,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "visible",
+  },
+  timelineLine: {
+    position: "absolute",
+    top: -10,
+    bottom: -10,
+    width: LINE_WIDTH,
+    backgroundColor: "#D1D1D6",
+  },
+  dot: {
+    width: DOT_SIZE,
+    height: DOT_SIZE,
+    borderRadius: DOT_SIZE / 2,
+  },
+  dotUnread: {
+    backgroundColor: "#198754",
+  },
+  dotRead: {
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1.5,
+    borderColor: "#C6C6C8",
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+  },
+  headerLine: {
+    flex: 1,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: "#D1D1D6",
+  },
+  headerTitle: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#8E8E93",
+    letterSpacing: 0.5,
+    marginHorizontal: 14,
+  },
   row: {
     flexDirection: "row",
     alignItems: "stretch",
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    gap: 12,
+    paddingRight: 20,
+    paddingLeft: 16,
+    paddingVertical: 10,
+    overflow: "hidden",
   },
   rowPressed: {
     opacity: 0.6,
@@ -144,6 +258,7 @@ const styles = StyleSheet.create({
   rowContent: {
     flex: 1,
     gap: 2,
+    marginLeft: 10,
   },
   rowHeader: {
     flexDirection: "row",
@@ -174,11 +289,6 @@ const styles = StyleSheet.create({
   subject: {
     fontSize: 15,
     color: "#8E8E93",
-  },
-  separator: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: "#C6C6C8",
-    marginLeft: 16,
   },
   loader: {
     flex: 1,
