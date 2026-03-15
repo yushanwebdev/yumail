@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { emails as mockEmails, type Email } from '@/constants/emails';
 
 type ResendEmail = {
@@ -83,35 +83,57 @@ function toEmail(resendEmail: ResendEmail): Email {
 }
 
 export function useEmails() {
-  const [emails, setEmails] = useState<Email[]>(mockEmails);
+  const [emails, setEmails] = useState<Email[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const cursorRef = useRef<string | null>(null);
 
   const fetchEmails = useCallback(async () => {
     setLoading(true);
     setError(null);
+    cursorRef.current = null;
     try {
-      const res = await fetch('/api/emails');
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
+      const res = await fetch('/api/emails?limit=20');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const body: ResendListResponse = await res.json();
       if (body.data && body.data.length > 0) {
         setEmails(body.data.map(toEmail));
+        cursorRef.current = body.data[body.data.length - 1].id;
       }
-      // If empty response, keep mock data as fallback
+      setHasMore(body.has_more ?? false);
     } catch (err) {
       console.warn('Failed to fetch emails from Resend, using mock data:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
-      // Keep mock data on error
+      setEmails(mockEmails);
     } finally {
       setLoading(false);
     }
   }, []);
 
+  const fetchMore = useCallback(async () => {
+    if (loadingMore || !hasMore || !cursorRef.current) return;
+    setLoadingMore(true);
+    try {
+      const res = await fetch(`/api/emails?limit=20&after=${cursorRef.current}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const body: ResendListResponse = await res.json();
+      if (body.data && body.data.length > 0) {
+        setEmails((prev) => [...prev, ...body.data.map(toEmail)]);
+        cursorRef.current = body.data[body.data.length - 1].id;
+      }
+      setHasMore(body.has_more ?? false);
+    } catch (err) {
+      console.warn('Failed to fetch more emails:', err);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, hasMore]);
+
   useEffect(() => {
     fetchEmails();
   }, [fetchEmails]);
 
-  return { emails, loading, error, refetch: fetchEmails };
+  return { emails, loading, loadingMore, error, hasMore, refetch: fetchEmails, fetchMore };
 }

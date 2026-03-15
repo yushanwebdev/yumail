@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import {
-  FlatList,
+  ActivityIndicator,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
+import { LegendList } from '@legendapp/list';
 import { useEmails } from '@/hooks/useEmails';
 import type { Email } from '@/constants/emails';
 
@@ -61,7 +62,7 @@ function EmailRow({ email }: { email: Email }) {
 
 export default function InboxScreen() {
   const [search, setSearch] = useState('');
-  const { emails } = useEmails();
+  const { emails, loading, loadingMore, hasMore, fetchMore } = useEmails();
 
   const filtered = search
     ? emails.filter(
@@ -86,12 +87,25 @@ export default function InboxScreen() {
           />
         </View>
       </View>
-      <FlatList
-        data={filtered}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <EmailRow email={item} />}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-      />
+      {loading ? (
+        <ActivityIndicator style={styles.loader} size="large" color="#198754" />
+      ) : (
+        <LegendList
+          data={filtered}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <EmailRow email={item} />}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
+          estimatedItemSize={80}
+          onEndReached={!search ? fetchMore : undefined}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            loadingMore && hasMore ? (
+              <ActivityIndicator style={styles.footerLoader} size="small" color="#198754" />
+            ) : null
+          }
+          recycleItems
+        />
+      )}
     </View>
   );
 }
@@ -195,5 +209,12 @@ const styles = StyleSheet.create({
     height: StyleSheet.hairlineWidth,
     backgroundColor: '#C6C6C8',
     marginLeft: 84,
+  },
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  footerLoader: {
+    paddingVertical: 16,
   },
 });
