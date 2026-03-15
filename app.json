@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yushan-blott.yumail-app"
+      "bundleIdentifier": "com.yushan.yumail-app"
     },
     "android": {
       "adaptiveIcon": {
