@@ -88,6 +88,7 @@ function toEmail(resendEmail: ResendEmail): Email {
   return {
     id: resendEmail.id,
     sender: extractSenderName(resendEmail.from),
+    from: resendEmail.from,
     subject: resendEmail.subject || '(No subject)',
     snippet: '',
     date: formatDate(resendEmail.created_at),

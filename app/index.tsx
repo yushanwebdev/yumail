@@ -12,17 +12,12 @@ import {
   View,
 } from "react-native";
 
-function Avatar({ email }: { email: Email }) {
-  const bg = email.unread ? "#D1E7DD" : "#E8E8ED";
-  const color = email.unread ? "#198754" : "#8E8E93";
-
-  return (
-    <View style={[styles.avatar, { backgroundColor: bg }]}>
-      <Text style={[styles.avatarText, { color }]}>
-        {email.sender.charAt(0).toUpperCase()}
-      </Text>
-    </View>
-  );
+function extractEmail(from: string): { local: string; domain: string } {
+  const match = from.match(/<(.+?)>$/);
+  const addr = match ? match[1] : from;
+  const atIndex = addr.indexOf("@");
+  if (atIndex === -1) return { local: addr, domain: "" };
+  return { local: addr.slice(0, atIndex), domain: addr.slice(atIndex) };
 }
 
 function EmailRow({
@@ -32,19 +27,21 @@ function EmailRow({
   email: Email;
   onPress: () => void;
 }) {
+  const { local, domain } = extractEmail(email.from);
+
   return (
     <Pressable
       onPress={onPress}
       style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
     >
-      <Avatar email={email} />
       <View style={styles.rowContent}>
         <View style={styles.rowHeader}>
           <Text
             style={[styles.sender, email.unread && styles.senderUnread]}
             numberOfLines={1}
           >
-            {email.sender}
+            {local}
+            <Text style={styles.senderDomain}>{domain}</Text>
           </Text>
           <Text style={[styles.date, email.unread && styles.dateUnread]}>
             {email.date}
@@ -54,11 +51,6 @@ function EmailRow({
           {email.subject}
         </Text>
       </View>
-      {email.unread && (
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>1</Text>
-        </View>
-      )}
     </Pressable>
   );
 }
@@ -141,24 +133,13 @@ export default function InboxScreen() {
 const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    alignItems: "stretch",
+    paddingHorizontal: 20,
+    paddingVertical: 14,
     gap: 12,
   },
   rowPressed: {
     opacity: 0.6,
-  },
-  avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarText: {
-    fontSize: 22,
-    fontWeight: "600",
   },
   rowContent: {
     flex: 1,
@@ -177,6 +158,11 @@ const styles = StyleSheet.create({
   senderUnread: {
     fontWeight: "600",
   },
+  senderDomain: {
+    fontSize: 13,
+    color: "#8E8E93",
+    fontWeight: "400",
+  },
   date: {
     fontSize: 15,
     color: "#8E8E93",
@@ -189,24 +175,10 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#8E8E93",
   },
-  badge: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: "#198754",
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 4,
-  },
-  badgeText: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#FFFFFF",
-  },
   separator: {
     height: StyleSheet.hairlineWidth,
     backgroundColor: "#C6C6C8",
-    marginLeft: 84,
+    marginLeft: 16,
   },
   loader: {
     flex: 1,
