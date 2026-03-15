@@ -26,19 +26,49 @@ function extractSenderName(from: string): string {
   return match ? match[1].trim() : from.split('@')[0];
 }
 
+function parseDate(dateStr: string): Date | null {
+  if (!dateStr) return null;
+  // Normalize Resend's format "2026-03-15 13:08:03.161658+00" to ISO 8601
+  const normalized = dateStr
+    .replace(' ', 'T')              // space -> T
+    .replace(/\+(\d{2})$/, '+$1:00') // +00 -> +00:00
+    .replace(/-(\d{2})$/, '-$1:00'); // -00 -> -00:00
+  let ts = Date.parse(normalized);
+  if (!isNaN(ts)) return new Date(ts);
+  // Manual fallback for Hermes
+  const m = normalized.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(Z|[+-]\d{2}:\d{2})?$/);
+  if (!m) return null;
+  const [, yr, mo, dy, hr, mn, sc, tz] = m;
+  if (!tz || tz === 'Z' || tz === '+00:00') {
+    return new Date(Date.UTC(+yr, +mo - 1, +dy, +hr, +mn, +sc));
+  }
+  const sign = tz[0] === '+' ? -1 : 1;
+  const [oh, om] = tz.slice(1).split(':').map(Number);
+  return new Date(Date.UTC(+yr, +mo - 1, +dy, +hr + sign * oh, +mn + sign * om, +sc));
+}
+
 function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
+  const date = parseDate(dateStr);
+  if (!date) return '';
+
   const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diffDays = Math.round((startOfToday.getTime() - startOfDay.getTime()) / (1000 * 60 * 60 * 24));
 
   if (diffDays === 0) {
-    return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const h = hours % 12 || 12;
+    const m = minutes.toString().padStart(2, '0');
+    return `${h}:${m} ${ampm}`;
   }
   if (diffDays === 1) {
     return 'Yesterday';
   }
-  return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `${months[date.getMonth()]} ${date.getDate()}`;
 }
 
 function toEmail(resendEmail: ResendEmail): Email {
