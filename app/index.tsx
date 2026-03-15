@@ -65,9 +65,9 @@ function extractEmail(from: string): { local: string; domain: string } {
 function SectionHeader({ title }: { title: string }) {
   return (
     <View style={styles.headerRow}>
-      <View style={styles.headerLine} />
-      <Text style={styles.headerTitle}>{title.toUpperCase()}</Text>
-      <View style={styles.headerLine} />
+      <View style={styles.headerBadge}>
+        <Text style={styles.headerTitle}>{title.toUpperCase()}</Text>
+      </View>
     </View>
   );
 }
@@ -86,14 +86,8 @@ function EmailRow({
       onPress={onPress}
       style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
     >
-      <View style={styles.timelineCol}>
-        <View style={styles.timelineLine} />
-        <View
-          style={[
-            styles.dot,
-            email.unread ? styles.dotUnread : styles.dotRead,
-          ]}
-        />
+      <View style={styles.dotCol}>
+        {email.unread && <View style={styles.unreadDot} />}
       </View>
       <View style={styles.rowContent}>
         <View style={styles.rowHeader}>
@@ -200,70 +194,52 @@ export default function InboxScreen() {
   );
 }
 
-const TIMELINE_WIDTH = 28;
-const DOT_SIZE = 8;
-const LINE_WIDTH = 1.5;
+const DOT_COL_WIDTH = 20;
 
 const styles = StyleSheet.create({
-  timelineCol: {
-    width: TIMELINE_WIDTH,
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "visible",
-  },
-  timelineLine: {
-    position: "absolute",
-    top: -10,
-    bottom: -10,
-    width: LINE_WIDTH,
-    backgroundColor: "#D1D1D6",
-  },
-  dot: {
-    width: DOT_SIZE,
-    height: DOT_SIZE,
-    borderRadius: DOT_SIZE / 2,
-  },
-  dotUnread: {
-    backgroundColor: "#198754",
-  },
-  dotRead: {
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1.5,
-    borderColor: "#C6C6C8",
-  },
   headerRow: {
-    flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingVertical: 8,
+    backgroundColor: "#FFFFFF",
   },
-  headerLine: {
-    flex: 1,
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: "#D1D1D6",
+  headerBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: "#F0F0F4",
   },
   headerTitle: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "600",
-    color: "#8E8E93",
+    color: "#6C6C70",
     letterSpacing: 0.5,
-    marginHorizontal: 14,
+  },
+  dotCol: {
+    width: DOT_COL_WIDTH,
+    alignItems: "center",
+    paddingTop: 6,
+  },
+  unreadDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#198754",
   },
   row: {
     flexDirection: "row",
-    alignItems: "stretch",
+    alignItems: "flex-start",
     paddingRight: 20,
-    paddingLeft: 16,
-    paddingVertical: 10,
-    overflow: "hidden",
+    paddingVertical: 12,
+    marginLeft: 20,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "#E5E5EA",
   },
   rowPressed: {
-    opacity: 0.6,
+    backgroundColor: "#F2F2F7",
   },
   rowContent: {
     flex: 1,
-    gap: 2,
-    marginLeft: 10,
+    gap: 3,
   },
   rowHeader: {
     flexDirection: "row",
@@ -271,7 +247,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   sender: {
-    fontSize: 17,
+    fontSize: 16,
     color: "#202646",
     flexShrink: 1,
   },
@@ -280,20 +256,22 @@ const styles = StyleSheet.create({
   },
   senderDomain: {
     fontSize: 13,
-    color: "#8E8E93",
+    color: "#6C6C70",
     fontWeight: "400",
   },
   date: {
-    fontSize: 15,
-    color: "#8E8E93",
+    fontSize: 14,
+    color: "#6C6C70",
     marginLeft: 8,
+    flexShrink: 0,
   },
   dateUnread: {
     color: "#198754",
   },
   subject: {
-    fontSize: 15,
-    color: "#8E8E93",
+    fontSize: 14,
+    color: "#6C6C70",
+    lineHeight: 19,
   },
   loader: {
     flex: 1,
