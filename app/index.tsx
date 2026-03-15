@@ -1,9 +1,15 @@
 import type { Email } from "@/constants/emails";
 import { useEmails } from "@/hooks/useEmails";
 import { LegendList } from "@legendapp/list";
-import { useNavigation } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import { useLayoutEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 function Avatar({ email }: { email: Email }) {
   const bg = email.unread ? "#D1E7DD" : "#E8E8ED";
@@ -18,9 +24,18 @@ function Avatar({ email }: { email: Email }) {
   );
 }
 
-function EmailRow({ email }: { email: Email }) {
+function EmailRow({
+  email,
+  onPress,
+}: {
+  email: Email;
+  onPress: () => void;
+}) {
   return (
-    <View style={styles.row}>
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+    >
       <Avatar email={email} />
       <View style={styles.rowContent}>
         <View style={styles.rowHeader}>
@@ -43,13 +58,14 @@ function EmailRow({ email }: { email: Email }) {
           <Text style={styles.badgeText}>1</Text>
         </View>
       )}
-    </View>
+    </Pressable>
   );
 }
 
 export default function InboxScreen() {
   const [search, setSearch] = useState("");
   const navigation = useNavigation();
+  const router = useRouter();
   const { emails, loading, loadingMore, hasMore, fetchMore } = useEmails();
 
   useLayoutEffect(() => {
@@ -90,7 +106,12 @@ export default function InboxScreen() {
     <LegendList
       data={filtered}
       keyExtractor={(item) => item.id}
-      renderItem={({ item }) => <EmailRow email={item} />}
+      renderItem={({ item }) => (
+        <EmailRow
+          email={item}
+          onPress={() => router.push(`/email/${item.id}`)}
+        />
+      )}
       ItemSeparatorComponent={() => <View style={styles.separator} />}
       estimatedItemSize={80}
       onEndReached={!search ? fetchMore : undefined}
@@ -117,6 +138,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 12,
+  },
+  rowPressed: {
+    opacity: 0.6,
   },
   avatar: {
     width: 56,
