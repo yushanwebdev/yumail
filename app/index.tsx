@@ -1,18 +1,13 @@
-import { useState } from 'react';
-import {
-  ActivityIndicator,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import { LegendList } from '@legendapp/list';
-import { useEmails } from '@/hooks/useEmails';
-import type { Email } from '@/constants/emails';
+import type { Email } from "@/constants/emails";
+import { useEmails } from "@/hooks/useEmails";
+import { LegendList } from "@legendapp/list";
+import { useNavigation } from "expo-router";
+import { useLayoutEffect, useState } from "react";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 function Avatar({ email }: { email: Email }) {
-  const bg = email.unread ? '#D1E7DD' : '#E8E8ED';
-  const color = email.unread ? '#198754' : '#8E8E93';
+  const bg = email.unread ? "#D1E7DD" : "#E8E8ED";
+  const color = email.unread ? "#198754" : "#8E8E93";
 
   return (
     <View style={[styles.avatar, { backgroundColor: bg }]}>
@@ -30,20 +25,12 @@ function EmailRow({ email }: { email: Email }) {
       <View style={styles.rowContent}>
         <View style={styles.rowHeader}>
           <Text
-            style={[
-              styles.sender,
-              email.unread && styles.senderUnread,
-            ]}
+            style={[styles.sender, email.unread && styles.senderUnread]}
             numberOfLines={1}
           >
             {email.sender}
           </Text>
-          <Text
-            style={[
-              styles.date,
-              email.unread && styles.dateUnread,
-            ]}
-          >
+          <Text style={[styles.date, email.unread && styles.dateUnread]}>
             {email.date}
           </Text>
         </View>
@@ -61,92 +48,72 @@ function EmailRow({ email }: { email: Email }) {
 }
 
 export default function InboxScreen() {
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
+  const navigation = useNavigation();
   const { emails, loading, loadingMore, hasMore, fetchMore } = useEmails();
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: "Inbox",
+      headerLargeTitle: true,
+      headerLargeTitleStyle: {
+        color: "#202646",
+      },
+      headerTintColor: "#202646",
+      headerShadowVisible: false,
+      headerSearchBarOptions: {
+        placeholder: "Search",
+        onChangeText: (event: { nativeEvent: { text: string } }) => {
+          setSearch(event.nativeEvent.text);
+        },
+        onCancelButtonPress: () => setSearch(""),
+      },
+      headerBackVisible: false,
+    });
+  }, [navigation]);
 
   const filtered = search
     ? emails.filter(
         (e) =>
           e.sender.toLowerCase().includes(search.toLowerCase()) ||
-          e.subject.toLowerCase().includes(search.toLowerCase())
+          e.subject.toLowerCase().includes(search.toLowerCase()),
       )
     : emails;
 
+  if (loading) {
+    return (
+      <ActivityIndicator style={styles.loader} size="large" color="#198754" />
+    );
+  }
+
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Inbox</Text>
-        <View style={styles.searchBar}>
-          <Text style={styles.searchIcon}>🔍</Text>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search"
-            placeholderTextColor="#8E8E93"
-            value={search}
-            onChangeText={setSearch}
+    <LegendList
+      data={filtered}
+      keyExtractor={(item) => item.id}
+      renderItem={({ item }) => <EmailRow email={item} />}
+      ItemSeparatorComponent={() => <View style={styles.separator} />}
+      estimatedItemSize={80}
+      onEndReached={!search ? fetchMore : undefined}
+      onEndReachedThreshold={0.5}
+      contentInsetAdjustmentBehavior="automatic"
+      ListFooterComponent={
+        loadingMore && hasMore ? (
+          <ActivityIndicator
+            style={styles.footerLoader}
+            size="small"
+            color="#198754"
           />
-        </View>
-      </View>
-      {loading ? (
-        <ActivityIndicator style={styles.loader} size="large" color="#198754" />
-      ) : (
-        <LegendList
-          data={filtered}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <EmailRow email={item} />}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
-          estimatedItemSize={80}
-          onEndReached={!search ? fetchMore : undefined}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={
-            loadingMore && hasMore ? (
-              <ActivityIndicator style={styles.footerLoader} size="small" color="#198754" />
-            ) : null
-          }
-          recycleItems
-        />
-      )}
-    </View>
+        ) : null
+      }
+      recycleItems
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 60,
-    paddingBottom: 8,
-  },
-  title: {
-    fontSize: 34,
-    fontWeight: 'bold',
-    color: '#202646',
-    marginBottom: 8,
-  },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F2F2F7',
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 8,
-  },
-  searchIcon: {
-    fontSize: 14,
-    marginRight: 6,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 17,
-    color: '#202646',
-    padding: 0,
-  },
   row: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    alignItems: "flex-start",
     paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 12,
@@ -155,64 +122,64 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   avatarText: {
     fontSize: 22,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   rowContent: {
     flex: 1,
     gap: 2,
   },
   rowHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   sender: {
     fontSize: 17,
-    color: '#202646',
+    color: "#202646",
     flexShrink: 1,
   },
   senderUnread: {
-    fontWeight: '600',
+    fontWeight: "600",
   },
   date: {
     fontSize: 15,
-    color: '#8E8E93',
+    color: "#8E8E93",
     marginLeft: 8,
   },
   dateUnread: {
-    color: '#198754',
+    color: "#198754",
   },
   subject: {
     fontSize: 15,
-    color: '#8E8E93',
+    color: "#8E8E93",
   },
   badge: {
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: '#198754',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#198754",
+    alignItems: "center",
+    justifyContent: "center",
     marginTop: 4,
   },
   badgeText: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#FFFFFF',
+    fontWeight: "600",
+    color: "#FFFFFF",
   },
   separator: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: '#C6C6C8',
+    backgroundColor: "#C6C6C8",
     marginLeft: 84,
   },
   loader: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   footerLoader: {
     paddingVertical: 16,
