@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { colors, fonts, spacing } from '@/constants/theme';
 import type { Email } from '@/constants/emails';
 
@@ -7,8 +8,13 @@ type EmailRowProps = {
 };
 
 export function EmailRow({ email }: EmailRowProps) {
+  const router = useRouter();
+
   return (
-    <Pressable style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}>
+    <Pressable
+      onPress={() => router.push(`/email/${email.id}`)}
+      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+    >
       <View style={styles.topLine}>
         <View style={styles.senderRow}>
           {email.unread && <Text style={styles.statusDot}>*</Text>}
