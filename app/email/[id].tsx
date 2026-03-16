@@ -140,7 +140,7 @@ export default function EmailDetailScreen() {
             const h = Number(event.nativeEvent.data);
             if (h > 0) setWebViewHeight(h);
           }}
-          injectedJavaScript="setTimeout(()=>window.ReactNativeWebView.postMessage(String(document.body.scrollHeight)),300);true;"
+          injectedJavaScript="(function(){var last=0;function post(){var h=document.body.scrollHeight;if(h!==last){last=h;window.ReactNativeWebView.postMessage(String(h))}}if(window.ResizeObserver){new ResizeObserver(post).observe(document.body)}else{new MutationObserver(post).observe(document.body,{childList:true,subtree:true,attributes:true});setInterval(post,500)}document.addEventListener('load',post,true);post()})();true;"
         />
       ) : hasHtml && Platform.OS === 'web' ? (
         <iframe
