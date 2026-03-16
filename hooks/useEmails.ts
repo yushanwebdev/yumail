@@ -105,13 +105,18 @@ function toEmail(resendEmail: ResendEmail): Email {
 export function useEmails() {
   const [emails, setEmails] = useState<Email[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const cursorRef = useRef<string | null>(null);
 
-  const fetchEmails = useCallback(async () => {
-    setLoading(true);
+  const fetchEmails = useCallback(async (isRefresh = false) => {
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
     setError(null);
     cursorRef.current = null;
     try {
@@ -127,6 +132,7 @@ export function useEmails() {
       setEmails(mockEmails);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, []);
 
@@ -151,5 +157,7 @@ export function useEmails() {
     fetchEmails();
   }, [fetchEmails]);
 
-  return { emails, loading, loadingMore, error, hasMore, refetch: fetchEmails, fetchMore };
+  const refetch = useCallback(() => fetchEmails(true), [fetchEmails]);
+
+  return { emails, loading, refreshing, loadingMore, error, hasMore, refetch, fetchMore };
 }

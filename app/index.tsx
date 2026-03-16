@@ -7,6 +7,7 @@ import { useLayoutEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
+  RefreshControl,
   StyleSheet,
   Text,
   View,
@@ -111,7 +112,7 @@ export default function InboxScreen() {
   const [search, setSearch] = useState("");
   const navigation = useNavigation();
   const router = useRouter();
-  const { emails, loading, loadingMore, hasMore, fetchMore } = useEmails();
+  const { emails, loading, refreshing, loadingMore, hasMore, refetch, fetchMore } = useEmails();
   const readIds = useReadStatusStore((s) => s.readIds);
 
   useLayoutEffect(() => {
@@ -185,6 +186,14 @@ export default function InboxScreen() {
             color="#198754"
           />
         ) : null
+      }
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={refetch}
+          tintColor="#198754"
+          colors={["#198754"]}
+        />
       }
       recycleItems
     />
