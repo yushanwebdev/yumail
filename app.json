@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yushan-blott.spotapp"
+      "bundleIdentifier": "com.yushanwebdev.yumail"
     },
     "android": {
       "adaptiveIcon": {
