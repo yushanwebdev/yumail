@@ -25,6 +25,7 @@ function isSameDay(a: Date, b: Date): boolean {
 }
 
 export function WeekDayPicker({ selectedDate, onSelectDate }: WeekDayPickerProps) {
+  const today = useMemo(() => new Date(), []);
   const weekStart = useMemo(() => startOfWeek(selectedDate), [selectedDate]);
 
   const days = useMemo(() => {
@@ -60,6 +61,7 @@ export function WeekDayPicker({ selectedDate, onSelectDate }: WeekDayPickerProps
         </Pressable>
         {days.map((day, i) => {
           const selected = isSameDay(day, selectedDate);
+          const isToday = isSameDay(day, today);
           return (
             <Pressable
               key={i}
@@ -69,7 +71,13 @@ export function WeekDayPicker({ selectedDate, onSelectDate }: WeekDayPickerProps
               <Text style={[styles.dayLabel, selected && styles.dayLabelSelected]}>
                 {DAY_LABELS[i]}
               </Text>
-              <View style={[styles.dayCircle, selected && styles.dayCircleSelected]}>
+              <View
+                style={[
+                  styles.dayCircle,
+                  isToday && !selected && styles.dayCircleToday,
+                  selected && styles.dayCircleSelected,
+                ]}
+              >
                 <Text style={[styles.dayNumber, selected && styles.dayNumberSelected]}>
                   {day.getDate()}
                 </Text>
@@ -129,6 +137,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.unselectedDay,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  dayCircleToday: {
+    borderWidth: 2,
+    borderColor: colors.selectedDay,
   },
   dayCircleSelected: {
     backgroundColor: colors.selectedDay,
