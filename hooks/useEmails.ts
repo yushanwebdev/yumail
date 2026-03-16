@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { emails as mockEmails, type Email } from '@/constants/emails';
 
+const MAX_AUTO_FETCHES = 5;
+
 const RESEND_API_KEY = process.env.EXPO_PUBLIC_RESEND_API_KEY;
 const RESEND_BASE_URL = 'https://api.resend.com/emails/receiving';
 
@@ -39,7 +41,7 @@ function extractSenderName(from: string): string {
   return match ? match[1].trim() : from.split('@')[0];
 }
 
-function parseDate(dateStr: string): Date | null {
+export function parseDate(dateStr: string): Date | null {
   if (!dateStr) return null;
   // Normalize Resend's format "2026-03-15 13:08:03.161658+00" to ISO 8601
   const normalized = dateStr
@@ -89,6 +91,20 @@ export function formatBucket(dateStr: string): string {
   return `${days[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}`;
 }
 
+function startOfDay(d: Date): number {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+}
+
+/** Returns true when the oldest email in the list is from before `date` */
+function haveFetchedPastDate(emails: Email[], date: Date): boolean {
+  if (emails.length === 0) return false;
+  const last = emails[emails.length - 1];
+  if (!last.createdAt) return false;
+  const emailDate = parseDate(last.createdAt);
+  if (!emailDate) return false;
+  return startOfDay(emailDate) < startOfDay(date);
+}
+
 function toEmail(resendEmail: ResendEmail): Email {
   return {
     id: resendEmail.id,
@@ -102,14 +118,27 @@ function toEmail(resendEmail: ResendEmail): Email {
   };
 }
 
-export function useEmails() {
+export function useEmails(selectedDate: Date) {
   const [emails, setEmails] = useState<Email[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
+  const [dateExhausted, setDateExhausted] = useState(false);
   const cursorRef = useRef<string | null>(null);
+  const autoFetchCountRef = useRef(0);
+
+  // Reset auto-fetch tracking when selected date changes
+  const selectedDayTs = startOfDay(selectedDate);
+  const prevDayTsRef = useRef(selectedDayTs);
+  useEffect(() => {
+    if (prevDayTsRef.current !== selectedDayTs) {
+      prevDayTsRef.current = selectedDayTs;
+      autoFetchCountRef.current = 0;
+      setDateExhausted(false);
+    }
+  }, [selectedDayTs]);
 
   const fetchEmails = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
@@ -119,6 +148,8 @@ export function useEmails() {
     }
     setError(null);
     cursorRef.current = null;
+    autoFetchCountRef.current = 0;
+    setDateExhausted(false);
     try {
       const body = await fetchResendEmails(20);
       if (body.data && body.data.length > 0) {
@@ -153,11 +184,30 @@ export function useEmails() {
     }
   }, [loadingMore, hasMore]);
 
+  // Auto-fetch pages until the selected date is covered
+  useEffect(() => {
+    if (loading || refreshing || loadingMore || dateExhausted) return;
+    if (!hasMore) {
+      setDateExhausted(true);
+      return;
+    }
+    if (haveFetchedPastDate(emails, selectedDate)) {
+      setDateExhausted(true);
+      return;
+    }
+    if (autoFetchCountRef.current >= MAX_AUTO_FETCHES) {
+      setDateExhausted(true);
+      return;
+    }
+    autoFetchCountRef.current += 1;
+    fetchMore();
+  }, [emails, loading, refreshing, loadingMore, hasMore, dateExhausted, selectedDate, fetchMore]);
+
   useEffect(() => {
     fetchEmails();
   }, [fetchEmails]);
 
   const refetch = useCallback(() => fetchEmails(true), [fetchEmails]);
 
-  return { emails, loading, refreshing, loadingMore, error, hasMore, refetch, fetchMore };
+  return { emails, loading, refreshing, loadingMore, error, hasMore, dateExhausted, refetch, fetchMore };
 }
