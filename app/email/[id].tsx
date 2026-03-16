@@ -87,7 +87,7 @@ export default function EmailDetailScreen() {
   }, [email, id, markAsRead]);
 
   if (loading) {
-    return <ActivityIndicator style={styles.loader} size="large" color="#198754" />;
+    return <ActivityIndicator style={styles.loader} size="large" color="#000000" />;
   }
 
   if (error || !email) {
@@ -222,14 +222,14 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#D1E7DD',
+    backgroundColor: '#000000',
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#198754',
+    color: '#FFFFFF',
   },
   senderInfo: {
     flex: 1,
