@@ -4,6 +4,22 @@ export const colors = {
   paper: '#FFFFFF',
   accentBlue: '#2952A3',
   divider: '#EBEBEB',
+  background: '#F5F3F0',
+  cardBackground: '#FFFFFF',
+  cardBorder: '#E8E6E3',
+  textPrimary: '#1A1A1A',
+  textSecondary: '#7A7A7A',
+  selectedDay: '#1A1A1A',
+  unselectedDay: '#F0EFED',
+  sectionPill: '#F0F0F4',
+} as const;
+
+export const radii = {
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 24,
+  full: 9999,
 } as const;
 
 export const spacing = {

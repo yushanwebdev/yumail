@@ -5,6 +5,7 @@ import { asyncStorage } from './asyncStorage';
 type ReadStatusState = {
   readIds: string[];
   markAsRead: (id: string) => void;
+  toggleRead: (id: string) => void;
   isRead: (id: string) => boolean;
 };
 
@@ -14,6 +15,13 @@ export const useReadStatusStore = create<ReadStatusState>()(
       readIds: [],
       markAsRead: (id) => {
         if (!get().readIds.includes(id)) {
+          set((state) => ({ readIds: [...state.readIds, id] }));
+        }
+      },
+      toggleRead: (id) => {
+        if (get().readIds.includes(id)) {
+          set((state) => ({ readIds: state.readIds.filter((r) => r !== id) }));
+        } else {
           set((state) => ({ readIds: [...state.readIds, id] }));
         }
       },
