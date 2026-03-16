@@ -8,7 +8,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LegendList } from '@legendapp/list';
 import type { Email } from '@/constants/emails';
-import { useEmails } from '@/hooks/useEmails';
+import { useEmails, parseDate } from '@/hooks/useEmails';
 import { useReadStatusStore } from '@/stores/useReadStatusStore';
 import { colors } from '@/constants/theme';
 import { EmailRow } from '@/components/EmailRow';
@@ -24,21 +24,10 @@ function isSameDay(a: Date, b: Date): boolean {
   );
 }
 
-function parseEmailDate(dateStr: string): Date | null {
-  if (!dateStr) return null;
-  const normalized = dateStr
-    .replace(' ', 'T')
-    .replace(/\+(\d{2})$/, '+$1:00')
-    .replace(/-(\d{2})$/, '-$1:00');
-  const ts = Date.parse(normalized);
-  if (!isNaN(ts)) return new Date(ts);
-  return null;
-}
-
 function emailMatchesDate(email: Email, selected: Date): boolean {
   // API emails have createdAt — compare calendar day
   if (email.createdAt) {
-    const emailDate = parseEmailDate(email.createdAt);
+    const emailDate = parseDate(email.createdAt);
     if (emailDate) return isSameDay(emailDate, selected);
   }
 
@@ -92,8 +81,8 @@ function ListHeader({
 
 export default function InboxScreen() {
   const [selectedDate, setSelectedDate] = useState(() => new Date());
-  const { emails, loading, refreshing, loadingMore, hasMore, refetch, fetchMore } =
-    useEmails();
+  const { emails, loading, refreshing, loadingMore, hasMore, dateExhausted, refetch, fetchMore } =
+    useEmails(selectedDate);
   const readIds = useReadStatusStore((s) => s.readIds);
 
   const emailsWithReadStatus = useMemo(
@@ -129,10 +118,10 @@ export default function InboxScreen() {
           />
         }
         estimatedItemSize={72}
-        onEndReached={fetchMore}
+        onEndReached={dateExhausted ? undefined : fetchMore}
         onEndReachedThreshold={0.5}
         ListFooterComponent={
-          loadingMore && hasMore ? (
+          loadingMore && hasMore && !dateExhausted ? (
             <ActivityIndicator
               style={styles.footerLoader}
               size="small"
