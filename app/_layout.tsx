@@ -41,7 +41,19 @@ export default function RootLayout() {
   return (
     <>
       <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: true }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen
+          name="email/[id]"
+          options={{
+            headerShown: true,
+            headerBackTitle: 'Inbox',
+            headerTintColor: '#202646',
+            headerShadowVisible: false,
+            title: '',
+          }}
+        />
+      </Stack>
     </>
   );
 }
