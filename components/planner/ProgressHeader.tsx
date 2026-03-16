@@ -20,9 +20,6 @@ export function ProgressHeader({ readCount, totalCount }: ProgressHeaderProps) {
         <Pressable style={styles.iconButton}>
           <Text style={styles.iconText}>···</Text>
         </Pressable>
-        <Pressable style={styles.iconButton}>
-          <Text style={styles.iconText}>+</Text>
-        </Pressable>
       </View>
     </View>
   );
