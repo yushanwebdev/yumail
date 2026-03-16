@@ -148,6 +148,8 @@ export function useEmails(selectedDate: Date) {
     }
     setError(null);
     cursorRef.current = null;
+    autoFetchCountRef.current = 0;
+    setDateExhausted(false);
     try {
       const body = await fetchResendEmails(20);
       if (body.data && body.data.length > 0) {
@@ -184,7 +186,7 @@ export function useEmails(selectedDate: Date) {
 
   // Auto-fetch pages until the selected date is covered
   useEffect(() => {
-    if (loading || loadingMore || dateExhausted) return;
+    if (loading || refreshing || loadingMore || dateExhausted) return;
     if (!hasMore) {
       setDateExhausted(true);
       return;
@@ -199,7 +201,7 @@ export function useEmails(selectedDate: Date) {
     }
     autoFetchCountRef.current += 1;
     fetchMore();
-  }, [emails, loading, loadingMore, hasMore, dateExhausted, selectedDate, fetchMore]);
+  }, [emails, loading, refreshing, loadingMore, hasMore, dateExhausted, selectedDate, fetchMore]);
 
   useEffect(() => {
     fetchEmails();
