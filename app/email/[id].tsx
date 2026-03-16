@@ -131,10 +131,11 @@ export default function EmailDetailScreen() {
         <WebView
           originWhitelist={['*']}
           source={{
-            html: `<html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{margin:0;padding:0;font-family:-apple-system,system-ui,sans-serif;font-size:16px;color:#202646;word-break:break-word}img{max-width:100%;height:auto}</style></head><body>${email.html}</body></html>`,
+            html: `<html><head><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0"><style>body{margin:0;padding:0;font-family:-apple-system,system-ui,sans-serif;font-size:16px;color:#202646;word-break:break-word;overflow-x:auto}img{max-width:100%;height:auto}table{max-width:none}</style></head><body>${email.html}</body></html>`,
           }}
           style={{ width: width - 32, height: webViewHeight }}
-          scrollEnabled={false}
+          scrollEnabled={true}
+          showsHorizontalScrollIndicator={true}
           showsVerticalScrollIndicator={false}
           onMessage={(event) => {
             const h = Number(event.nativeEvent.data);
