@@ -8,22 +8,9 @@ type EmailRowProps = {
   email: Email;
 };
 
-const AVATAR_COLORS = [
-  '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4',
-  '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F',
-  '#BB8FCE', '#85C1E9', '#F0B27A', '#82E0AA',
-];
-
-function hashCode(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
-  }
-  return Math.abs(hash);
-}
-
-function getAvatarColor(name: string): string {
-  return AVATAR_COLORS[hashCode(name) % AVATAR_COLORS.length];
+function extractEmail(from: string): string {
+  const match = from.match(/<(.+)>/);
+  return match ? match[1] : from;
 }
 
 export function EmailRow({ email }: EmailRowProps) {
@@ -31,25 +18,24 @@ export function EmailRow({ email }: EmailRowProps) {
   const isRead = useReadStatusStore((s) => s.readIds.includes(email.id));
   const toggleRead = useReadStatusStore((s) => s.toggleRead);
 
-  const initial = email.sender.charAt(0).toUpperCase();
-  const avatarBg = getAvatarColor(email.sender);
+  const fullEmail = extractEmail(email.from);
+  const atIndex = fullEmail.indexOf('@');
 
   return (
     <Pressable
       onPress={() => router.push(`/email/${email.id}`)}
       style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
     >
-      <View style={[styles.avatar, { backgroundColor: avatarBg }]}>
-        <Text style={styles.avatarText}>{initial}</Text>
-      </View>
-
       <View style={styles.content}>
-        <Text style={styles.senderName} numberOfLines={1}>
-          {email.sender}
+        <Text style={styles.subject} numberOfLines={1}>
+          {email.subject || '(No subject)'}
         </Text>
-        <Text style={styles.dateText} numberOfLines={1}>
-          {email.date}
-          {email.subject ? ` · ${email.subject}` : ''}
+        <Text style={styles.senderLine} numberOfLines={1}>
+          {atIndex > 0 ? fullEmail.slice(0, atIndex) : fullEmail}
+          {atIndex > 0 && (
+            <Text style={styles.senderDomain}>{fullEmail.slice(atIndex)}</Text>
+          )}
+          {email.date ? ` · ${email.date}` : ''}
         </Text>
       </View>
 
@@ -69,7 +55,6 @@ export function EmailRow({ email }: EmailRowProps) {
   );
 }
 
-const AVATAR_SIZE = 40;
 const CIRCLE_SIZE = 24;
 
 const styles = StyleSheet.create({
@@ -89,31 +74,24 @@ const styles = StyleSheet.create({
   cardPressed: {
     opacity: 0.7,
   },
-  avatar: {
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
-    borderRadius: AVATAR_SIZE / 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {
-    fontFamily: fonts.utilitySemiBold,
-    fontSize: 17,
-    color: '#FFFFFF',
-  },
   content: {
     flex: 1,
     gap: 2,
   },
-  senderName: {
+  subject: {
     fontFamily: fonts.utilitySemiBold,
     fontSize: 15,
     color: colors.textPrimary,
   },
-  dateText: {
+  senderLine: {
     fontFamily: fonts.utility,
     fontSize: 13,
     color: colors.textSecondary,
+  },
+  senderDomain: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    fontFamily: fonts.utility,
   },
   checkArea: {
     padding: 4,
