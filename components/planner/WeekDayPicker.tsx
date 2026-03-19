@@ -1,14 +1,14 @@
-import { useCallback, useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import * as Haptics from 'expo-haptics';
-import { colors, fonts, radii } from '@/constants/theme';
+import { colors, fonts } from "@/constants/theme";
+import * as Haptics from "expo-haptics";
+import { useCallback, useMemo } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 type WeekDayPickerProps = {
   selectedDate: Date;
   onSelectDate: (date: Date) => void;
 };
 
-const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+const DAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
 
 function startOfWeek(date: Date): Date {
   const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -24,7 +24,10 @@ function isSameDay(a: Date, b: Date): boolean {
   );
 }
 
-export function WeekDayPicker({ selectedDate, onSelectDate }: WeekDayPickerProps) {
+export function WeekDayPicker({
+  selectedDate,
+  onSelectDate,
+}: WeekDayPickerProps) {
   const today = useMemo(() => new Date(), []);
   const weekStart = useMemo(() => startOfWeek(selectedDate), [selectedDate]);
 
@@ -68,7 +71,9 @@ export function WeekDayPicker({ selectedDate, onSelectDate }: WeekDayPickerProps
               onPress={() => handleSelect(day)}
               style={styles.dayColumn}
             >
-              <Text style={[styles.dayLabel, selected && styles.dayLabelSelected]}>
+              <Text
+                style={[styles.dayLabel, selected && styles.dayLabelSelected]}
+              >
                 {DAY_LABELS[i]}
               </Text>
               <View
@@ -78,7 +83,12 @@ export function WeekDayPicker({ selectedDate, onSelectDate }: WeekDayPickerProps
                   selected && styles.dayCircleSelected,
                 ]}
               >
-                <Text style={[styles.dayNumber, selected && styles.dayNumberSelected]}>
+                <Text
+                  style={[
+                    styles.dayNumber,
+                    selected && styles.dayNumberSelected,
+                  ]}
+                >
                   {day.getDate()}
                 </Text>
               </View>
@@ -97,18 +107,19 @@ const CIRCLE_SIZE = 36;
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingHorizontal: 8,
-    paddingVertical: 12,
+    paddingTop: 16,
+    paddingBottom: 16,
     gap: 2,
   },
   arrow: {
     width: 28,
     height: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   arrowText: {
     fontSize: 22,
@@ -116,7 +127,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.utility,
   },
   dayColumn: {
-    alignItems: 'center',
+    alignItems: "center",
     flex: 1,
     gap: 4,
   },
@@ -124,7 +135,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.utility,
     fontSize: 11,
     color: colors.textSecondary,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   },
   dayLabelSelected: {
     color: colors.textPrimary,
@@ -135,8 +146,8 @@ const styles = StyleSheet.create({
     height: CIRCLE_SIZE,
     borderRadius: CIRCLE_SIZE / 2,
     backgroundColor: colors.unselectedDay,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   dayCircleToday: {
     borderWidth: 2,
@@ -151,6 +162,6 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   dayNumberSelected: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
   },
 });
