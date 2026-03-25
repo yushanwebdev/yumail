@@ -81,7 +81,7 @@ function ListHeader({
 
 export default function InboxScreen() {
   const [selectedDate, setSelectedDate] = useState(() => new Date());
-  const { emails, loading, refreshing, loadingMore, hasMore, dateExhausted, refetch, fetchMore } =
+  const { emails, refreshing, loadingMore, hasMore, dateExhausted, refetch, fetchMore } =
     useEmails(selectedDate);
   const readIds = useReadStatusStore((s) => s.readIds);
 
@@ -94,14 +94,6 @@ export default function InboxScreen() {
     () => filterByDate(emailsWithReadStatus, selectedDate),
     [emailsWithReadStatus, selectedDate],
   );
-
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color={colors.textPrimary} />
-      </SafeAreaView>
-    );
-  }
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -147,12 +139,6 @@ export default function InboxScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: colors.background,
-  },
-  loaderContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: colors.background,
   },
   list: {
