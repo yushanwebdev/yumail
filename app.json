@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "yumail-app",
+    "name": "Yumail",
     "slug": "yumail-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -10,7 +10,8 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yushanwebdev.yumail"
+      "bundleIdentifier": "com.yushan-blott.spotapp",
+      "icon": "./assets/images/yumail.icon"
     },
     "android": {
       "adaptiveIcon": {
@@ -31,11 +32,12 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/splash-icon-dark.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
           "dark": {
+            "image": "./assets/images/splash-icon-light.png",
             "backgroundColor": "#000000"
           }
         }

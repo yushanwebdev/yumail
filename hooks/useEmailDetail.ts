@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 const RESEND_API_KEY = process.env.EXPO_PUBLIC_RESEND_API_KEY;
 const RESEND_BASE_URL = 'https://api.resend.com/emails/receiving';
@@ -27,27 +27,11 @@ async function fetchEmailDetail(id: string): Promise<EmailDetail> {
 }
 
 export function useEmailDetail(id: string) {
-  const [email, setEmail] = useState<EmailDetail | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: email = null, isLoading: loading, error, refetch } = useQuery<EmailDetail>({
+    queryKey: ['email', id],
+    queryFn: () => fetchEmailDetail(id),
+    enabled: !!id,
+  });
 
-  const fetch_ = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const detail = await fetchEmailDetail(id);
-      setEmail(detail);
-    } catch (err) {
-      console.warn('Failed to fetch email detail:', err);
-      setError(err instanceof Error ? err.message : 'Unknown error');
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
-  useEffect(() => {
-    fetch_();
-  }, [fetch_]);
-
-  return { email, loading, error, refetch: fetch_ };
+  return { email, loading, error: error?.message ?? null, refetch };
 }

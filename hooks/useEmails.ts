@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { emails as mockEmails, type Email } from '@/constants/emails';
 
 const MAX_AUTO_FETCHES = 5;
+const PAGE_SIZE = 20;
 
 const RESEND_API_KEY = process.env.EXPO_PUBLIC_RESEND_API_KEY;
 const RESEND_BASE_URL = 'https://api.resend.com/emails/receiving';
@@ -25,6 +27,12 @@ type ResendListResponse = {
   data: ResendEmail[];
 };
 
+export type EmailsPage = {
+  emails: Email[];
+  hasMore: boolean;
+  nextCursor: string | null;
+};
+
 async function fetchResendEmails(limit: number, after?: string): Promise<ResendListResponse> {
   const params = new URLSearchParams({ limit: String(limit) });
   if (after) params.set('after', after);
@@ -36,21 +44,18 @@ async function fetchResendEmails(limit: number, after?: string): Promise<ResendL
 }
 
 function extractSenderName(from: string): string {
-  // "Name <email@example.com>" → "Name"
   const match = from.match(/^(.+?)\s*<.+>$/);
   return match ? match[1].trim() : from.split('@')[0];
 }
 
 export function parseDate(dateStr: string): Date | null {
   if (!dateStr) return null;
-  // Normalize Resend's format "2026-03-15 13:08:03.161658+00" to ISO 8601
   const normalized = dateStr
-    .replace(' ', 'T')              // space -> T
-    .replace(/\+(\d{2})$/, '+$1:00') // +00 -> +00:00
-    .replace(/-(\d{2})$/, '-$1:00'); // -00 -> -00:00
+    .replace(' ', 'T')
+    .replace(/\+(\d{2})$/, '+$1:00')
+    .replace(/-(\d{2})$/, '-$1:00');
   let ts = Date.parse(normalized);
   if (!isNaN(ts)) return new Date(ts);
-  // Manual fallback for Hermes
   const m = normalized.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(Z|[+-]\d{2}:\d{2})?$/);
   if (!m) return null;
   const [, yr, mo, dy, hr, mn, sc, tz] = m;
@@ -60,6 +65,23 @@ export function parseDate(dateStr: string): Date | null {
   const sign = tz[0] === '+' ? -1 : 1;
   const [oh, om] = tz.slice(1).split(':').map(Number);
   return new Date(Date.UTC(+yr, +mo - 1, +dy, +hr + sign * oh, +mn + sign * om, +sc));
+}
+
+export function formatBucket(dateStr: string): string {
+  const date = parseDate(dateStr);
+  if (!date) return '';
+
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfDayDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diffDays = Math.round((startOfToday.getTime() - startOfDayDate.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `${days[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}`;
 }
 
 function formatDate(dateStr: string): string {
@@ -74,28 +96,10 @@ function formatDate(dateStr: string): string {
   return `${h}:${m} ${ampm}`;
 }
 
-export function formatBucket(dateStr: string): string {
-  const date = parseDate(dateStr);
-  if (!date) return '';
-
-  const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const diffDays = Math.round((startOfToday.getTime() - startOfDay.getTime()) / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-
-  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return `${days[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}`;
-}
-
 function startOfDay(d: Date): number {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
 }
 
-/** Returns true when the oldest email in the list is from before `date` */
 function haveFetchedPastDate(emails: Email[], date: Date): boolean {
   if (emails.length === 0) return false;
   const last = emails[emails.length - 1];
@@ -118,16 +122,36 @@ function toEmail(resendEmail: ResendEmail): Email {
   };
 }
 
+export async function fetchEmailsPage(context: { pageParam: unknown }): Promise<EmailsPage> {
+  const body = await fetchResendEmails(PAGE_SIZE, context.pageParam as string | undefined);
+  const emails = body.data?.length > 0 ? body.data.map(toEmail) : [];
+  const nextCursor = body.data?.length > 0 ? body.data[body.data.length - 1].id : null;
+  return { emails, hasMore: body.has_more ?? false, nextCursor };
+}
+
 export function useEmails(selectedDate: Date) {
-  const [emails, setEmails] = useState<Email[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
   const [dateExhausted, setDateExhausted] = useState(false);
-  const cursorRef = useRef<string | null>(null);
   const autoFetchCountRef = useRef(0);
+
+  const {
+    data,
+    isLoading: loading,
+    isRefetching: refreshing,
+    isFetchingNextPage: loadingMore,
+    hasNextPage: hasMore,
+    fetchNextPage,
+    refetch,
+  } = useInfiniteQuery<EmailsPage>({
+    queryKey: ['emails'],
+    queryFn: fetchEmailsPage,
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextCursor : undefined),
+  });
+
+  const emails = useMemo(
+    () => data?.pages.flatMap((page) => page.emails) ?? [],
+    [data],
+  );
 
   // Reset auto-fetch tracking when selected date changes
   const selectedDayTs = startOfDay(selectedDate);
@@ -139,50 +163,6 @@ export function useEmails(selectedDate: Date) {
       setDateExhausted(false);
     }
   }, [selectedDayTs]);
-
-  const fetchEmails = useCallback(async (isRefresh = false) => {
-    if (isRefresh) {
-      setRefreshing(true);
-    } else {
-      setLoading(true);
-    }
-    setError(null);
-    cursorRef.current = null;
-    autoFetchCountRef.current = 0;
-    setDateExhausted(false);
-    try {
-      const body = await fetchResendEmails(20);
-      if (body.data && body.data.length > 0) {
-        setEmails(body.data.map(toEmail));
-        cursorRef.current = body.data[body.data.length - 1].id;
-      }
-      setHasMore(body.has_more ?? false);
-    } catch (err) {
-      console.warn('Failed to fetch emails from Resend, using mock data:', err);
-      setError(err instanceof Error ? err.message : 'Unknown error');
-      setEmails(mockEmails);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
-
-  const fetchMore = useCallback(async () => {
-    if (loadingMore || !hasMore || !cursorRef.current) return;
-    setLoadingMore(true);
-    try {
-      const body = await fetchResendEmails(20, cursorRef.current!);
-      if (body.data && body.data.length > 0) {
-        setEmails((prev) => [...prev, ...body.data.map(toEmail)]);
-        cursorRef.current = body.data[body.data.length - 1].id;
-      }
-      setHasMore(body.has_more ?? false);
-    } catch (err) {
-      console.warn('Failed to fetch more emails:', err);
-    } finally {
-      setLoadingMore(false);
-    }
-  }, [loadingMore, hasMore]);
 
   // Auto-fetch pages until the selected date is covered
   useEffect(() => {
@@ -200,14 +180,12 @@ export function useEmails(selectedDate: Date) {
       return;
     }
     autoFetchCountRef.current += 1;
-    fetchMore();
-  }, [emails, loading, refreshing, loadingMore, hasMore, dateExhausted, selectedDate, fetchMore]);
+    fetchNextPage();
+  }, [emails, loading, refreshing, loadingMore, hasMore, dateExhausted, selectedDate, fetchNextPage]);
 
-  useEffect(() => {
-    fetchEmails();
-  }, [fetchEmails]);
+  const fetchMore = () => {
+    if (hasMore && !loadingMore) fetchNextPage();
+  };
 
-  const refetch = useCallback(() => fetchEmails(true), [fetchEmails]);
-
-  return { emails, loading, refreshing, loadingMore, error, hasMore, dateExhausted, refetch, fetchMore };
+  return { emails, loading, refreshing, loadingMore, hasMore: !!hasMore, dateExhausted, refetch, fetchMore };
 }
