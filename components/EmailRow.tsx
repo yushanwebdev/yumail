@@ -1,10 +1,11 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 import { colors, fonts, radii } from '@/constants/theme';
 import { useReadStatusStore } from '@/stores/useReadStatusStore';
 import type { Email } from '@/constants/emails';
@@ -34,7 +35,12 @@ export function EmailRow({ email }: EmailRowProps) {
 
   return (
     <AnimatedPressable
-      onPress={() => router.push(`/email/${email.id}`)}
+      onPress={() => {
+        if (Platform.OS !== 'web') {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        }
+        router.push(`/email/${email.id}`);
+      }}
       onPressIn={() => {
         scale.value = withTiming(0.97, { duration: 120 });
       }}
@@ -58,6 +64,9 @@ export function EmailRow({ email }: EmailRowProps) {
       <Pressable
         onPress={(e) => {
           e.stopPropagation();
+          if (Platform.OS !== 'web') {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          }
           toggleRead(email.id);
         }}
         hitSlop={8}

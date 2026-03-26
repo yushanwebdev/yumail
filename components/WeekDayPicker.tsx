@@ -49,6 +49,7 @@ export function WeekDayPicker({
 
   const shiftWeek = useCallback(
     (direction: -1 | 1) => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       const next = new Date(selectedDate);
       next.setDate(next.getDate() + direction * 7);
       onSelectDate(next);
