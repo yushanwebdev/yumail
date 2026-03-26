@@ -1,4 +1,8 @@
-## Yumail App
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
 
 Yumail is an email client built with Expo SDK 55 (React Native 0.83, New Architecture enabled, React Compiler enabled). It fetches emails from the Resend API and displays them in an inbox with day-based filtering.
 
@@ -16,7 +20,6 @@ No test framework is configured.
 **Routing:** Expo Router with file-based routing (`app/` directory). Two screens: inbox list (`app/index.tsx`) and email detail (`app/email/[id].tsx`). Stack navigator with headers hidden on the inbox screen.
 
 **Data fetching:** React Query (`@tanstack/react-query`). The `QueryClientProvider` wraps the app in `app/_layout.tsx`. Two query hooks:
-
 - `useEmails` (`hooks/useEmails.ts`) — infinite query that paginates through the Resend API, auto-fetching pages until the selected date is covered
 - `useEmailDetail` (`hooks/useEmailDetail.ts`) — single email detail query
 
@@ -40,5 +43,4 @@ No test framework is configured.
 
 - TypeScript strict mode
 - Typed routes enabled (`experiments.typedRoutes` in app.json)
-- Mock email data in `constants/emails.ts` is used as fallback alongside live API data
 - Package manager: Bun (bun.lock present)
