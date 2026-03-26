@@ -29,14 +29,14 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   metaText: {
-    fontFamily: fonts.utility,
+    fontFamily: fonts.inter,
     fontSize: 9,
     textTransform: 'uppercase',
     letterSpacing: 0.45,
     color: colors.inkSecondary,
   },
   title: {
-    fontFamily: fonts.display,
+    fontFamily: fonts.playfairDisplay,
     fontSize: 40,
     fontWeight: '400',
     lineHeight: 40 * 0.95,

@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   arrowText: {
     fontSize: 22,
     color: colors.textSecondary,
-    fontFamily: fonts.utility,
+    fontFamily: fonts.inter,
   },
   dayColumn: {
     alignItems: "center",
@@ -132,14 +132,14 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   dayLabel: {
-    fontFamily: fonts.utility,
+    fontFamily: fonts.inter,
     fontSize: 11,
     color: colors.textSecondary,
     textTransform: "uppercase",
   },
   dayLabelSelected: {
     color: colors.textPrimary,
-    fontFamily: fonts.utilitySemiBold,
+    fontFamily: fonts.interSemiBold,
   },
   dayCircle: {
     width: CIRCLE_SIZE,
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.selectedDay,
   },
   dayNumber: {
-    fontFamily: fonts.utilityMedium,
+    fontFamily: fonts.interMedium,
     fontSize: 14,
     color: colors.textPrimary,
   },

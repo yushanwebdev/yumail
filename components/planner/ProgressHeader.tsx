@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   countText: {
-    fontFamily: fonts.utilitySemiBold,
+    fontFamily: fonts.interSemiBold,
     fontSize: 14,
     color: colors.textPrimary,
   },
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
   iconText: {
     fontSize: 18,
     color: colors.textPrimary,
-    fontFamily: fonts.utilitySemiBold,
+    fontFamily: fonts.interSemiBold,
     lineHeight: 20,
   },
 });

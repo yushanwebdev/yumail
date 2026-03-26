@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     width: 24,
   },
   statusDot: {
-    fontFamily: fonts.display,
+    fontFamily: fonts.playfairDisplay,
     fontSize: 16,
     color: colors.inkPrimary,
     lineHeight: 16,
@@ -73,14 +73,14 @@ const styles = StyleSheet.create({
     paddingRight: spacing.md,
   },
   senderText: {
-    fontFamily: fonts.utility,
+    fontFamily: fonts.inter,
     fontSize: 11,
     textTransform: 'uppercase',
     letterSpacing: 0.55,
     color: colors.inkPrimary,
   },
   senderUnread: {
-    fontFamily: fonts.utilitySemiBold,
+    fontFamily: fonts.interSemiBold,
     fontWeight: '600',
   },
   colContent: {
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     paddingRight: spacing.md,
   },
   subject: {
-    fontFamily: fonts.display,
+    fontFamily: fonts.playfairDisplay,
     fontSize: 18,
     fontWeight: '400',
     color: colors.inkPrimary,
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     color: colors.accentBlue,
   },
   snippet: {
-    fontFamily: fonts.utility,
+    fontFamily: fonts.inter,
     fontSize: 13,
     color: colors.inkSecondary,
     fontWeight: '400',
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   dateText: {
-    fontFamily: fonts.utility,
+    fontFamily: fonts.inter,
     fontSize: 10,
     textTransform: 'uppercase',
     letterSpacing: 0.5,

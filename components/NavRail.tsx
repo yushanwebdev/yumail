@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     paddingLeft: 5,
   },
   composeBtnText: {
-    fontFamily: fonts.utility,
+    fontFamily: fonts.inter,
     fontSize: 11,
     textTransform: 'uppercase',
     letterSpacing: 0.55,
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   navLabel: {
-    fontFamily: fonts.utility,
+    fontFamily: fonts.inter,
     fontSize: 10,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -107,16 +107,16 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   navItemText: {
-    fontFamily: fonts.display,
+    fontFamily: fonts.playfairDisplay,
     fontSize: 18,
     color: colors.inkPrimary,
   },
   navItemActive: {
     fontStyle: 'italic',
-    fontFamily: fonts.displayItalic,
+    fontFamily: fonts.playfairDisplayItalic,
   },
   count: {
-    fontFamily: fonts.utility,
+    fontFamily: fonts.inter,
     fontSize: 10,
     color: colors.inkSecondary,
   },
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   logoMark: {
-    fontFamily: fonts.utility,
+    fontFamily: fonts.inter,
     fontSize: 9,
     fontWeight: '700',
     opacity: 0.6,
