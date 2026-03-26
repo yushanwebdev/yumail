@@ -30,12 +30,14 @@ export const spacing = {
   xl: 80,
 } as const;
 
+import { Platform } from 'react-native';
+
 export const fonts = {
-  display: 'PlayfairDisplay_400Regular',
-  displayItalic: 'PlayfairDisplay_400Regular_Italic',
-  displayMedium: 'PlayfairDisplay_500Medium',
-  displaySemiBold: 'PlayfairDisplay_600SemiBold',
-  utility: 'Inter_400Regular',
-  utilityMedium: 'Inter_500Medium',
-  utilitySemiBold: 'Inter_600SemiBold',
+  playfairDisplay: Platform.select({ android: 'PlayfairDisplay_400Regular', ios: 'PlayfairDisplay-Regular' })!,
+  playfairDisplayItalic: Platform.select({ android: 'PlayfairDisplay_400Regular_Italic', ios: 'PlayfairDisplay-Italic' })!,
+  playfairDisplayMedium: Platform.select({ android: 'PlayfairDisplay_500Medium', ios: 'PlayfairDisplay-Medium' })!,
+  playfairDisplaySemiBold: Platform.select({ android: 'PlayfairDisplay_600SemiBold', ios: 'PlayfairDisplay-SemiBold' })!,
+  inter: Platform.select({ android: 'Inter_400Regular', ios: 'Inter-Regular' })!,
+  interMedium: Platform.select({ android: 'Inter_500Medium', ios: 'Inter-Medium' })!,
+  interSemiBold: Platform.select({ android: 'Inter_600SemiBold', ios: 'Inter-SemiBold' })!,
 } as const;

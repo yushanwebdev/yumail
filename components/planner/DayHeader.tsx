@@ -39,12 +39,12 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   dayName: {
-    fontFamily: fonts.displaySemiBold,
+    fontFamily: fonts.playfairDisplaySemiBold,
     fontSize: 32,
     color: colors.textPrimary,
   },
   dateSubtitle: {
-    fontFamily: fonts.utility,
+    fontFamily: fonts.inter,
     fontSize: 15,
     color: colors.textSecondary,
     marginTop: 2,

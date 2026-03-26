@@ -92,15 +92,15 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   subject: {
-    fontFamily: fonts.utilitySemiBold,
+    fontFamily: fonts.interSemiBold,
     fontSize: 15,
     color: colors.textPrimary,
   },
   subjectRead: {
-    fontFamily: fonts.utilityMedium,
+    fontFamily: fonts.interMedium,
   },
   senderLine: {
-    fontFamily: fonts.utility,
+    fontFamily: fonts.inter,
     fontSize: 12,
     color: colors.textSecondary,
   },
