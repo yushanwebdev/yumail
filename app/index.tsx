@@ -12,9 +12,9 @@ import { useEmails, parseDate } from '@/hooks/useEmails';
 import { useReadStatusStore } from '@/stores/useReadStatusStore';
 import { colors } from '@/constants/theme';
 import { EmailRow } from '@/components/EmailRow';
-import { ProgressHeader } from '@/components/planner/ProgressHeader';
-import { DayHeader } from '@/components/planner/DayHeader';
-import { WeekDayPicker } from '@/components/planner/WeekDayPicker';
+import { ProgressHeader } from '@/components/ProgressHeader';
+import { DayHeader } from '@/components/DayHeader';
+import { WeekDayPicker } from '@/components/WeekDayPicker';
 
 function isSameDay(a: Date, b: Date): boolean {
   return (
