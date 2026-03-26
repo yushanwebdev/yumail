@@ -7,9 +7,7 @@ Yumail is an email client built with Expo SDK 55 (React Native 0.83, New Archite
 - `npx expo start` — Start the dev server
 - `npx expo run:ios` — Build and run on iOS simulator
 - `npx expo run:android` — Build and run on Android emulator
-- `npx expo lint` — Run ESLint (flat config with eslint-config-expo)
-
-No test framework is configured.
+- `npx expo lint` — Run ESLint
 
 ## Architecture
 
@@ -32,13 +30,8 @@ No test framework is configured.
 
 **Platform variants:** Some components have `.web.tsx` variants (e.g., `EmailRow.web.tsx`, `InboxHeader.web.tsx`). Web also has a `NavRail` sidebar component.
 
-## Path Aliases
-
-`@/*` maps to the project root (configured in `tsconfig.json`). Use `@/components/Foo` not `../../components/Foo`.
-
 ## Key Conventions
 
 - TypeScript strict mode
 - Typed routes enabled (`experiments.typedRoutes` in app.json)
-- Mock email data in `constants/emails.ts` is used as fallback alongside live API data
-- Package manager: Bun (bun.lock present)
+- Package manager: Bun
