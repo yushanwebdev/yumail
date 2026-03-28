@@ -74,8 +74,7 @@ export default ({ config }: ConfigContext) => ({
   ],
   extra: {
     eas: {
-      projectId:
-        process.env.EAS_PROJECT_ID ?? "1a144acb-56b8-4557-b14f-d1c63215e5bc",
+      projectId: process.env.EAS_PROJECT_ID,
     },
     router: {},
   },
