@@ -57,7 +57,8 @@ async function registerForPushNotifications(): Promise<string | null> {
 function handleNotificationResponse(response: Notifications.NotificationResponse) {
   const data = response.notification.request.content.data;
   if (data?.emailId && typeof data.emailId === 'string') {
-    router.push(`/email/${data.emailId}`);
+    const safeId = encodeURIComponent(data.emailId);
+    router.push(`/email/${safeId}`);
   }
 }
 
