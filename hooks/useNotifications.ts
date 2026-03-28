@@ -68,11 +68,15 @@ export function useNotifications() {
   const responseListener = useRef<Notifications.EventSubscription | null>(null);
 
   useEffect(() => {
-    registerForPushNotifications().then((token) => {
-      if (token) {
-        setExpoPushToken(token);
-      }
-    });
+    registerForPushNotifications()
+      .then((token) => {
+        if (token) {
+          setExpoPushToken(token);
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to register for push notifications:', error);
+      });
 
     // Handle notification tap that launched the app (cold start)
     const lastResponse = Notifications.getLastNotificationResponse();
