@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { QueryClient, QueryClientProvider, useInfiniteQuery } from '@tanstack/react-query';
 import { fetchEmailsPage, type EmailsPage } from '@/hooks/useEmails';
+import { useNotifications } from '@/hooks/useNotifications';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -27,6 +28,8 @@ function SplashGate() {
 }
 
 function RootLayoutInner() {
+  useNotifications();
+
   return (
     <>
       <StatusBar style="dark" />
