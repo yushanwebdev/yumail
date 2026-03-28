@@ -1,6 +1,7 @@
 import { useEmailDetail } from '@/hooks/useEmailDetail';
-import { useReadStatusStore } from '@/stores/useReadStatusStore';
+import { markAsRead } from '@/stores/useReadStatusStore';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useLayoutEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -68,8 +69,7 @@ export default function EmailDetailScreen() {
   const { email, loading, error } = useEmailDetail(id);
   const { width } = useWindowDimensions();
   const [webViewHeight, setWebViewHeight] = useState(300);
-
-  const markAsRead = useReadStatusStore((s) => s.markAsRead);
+  const queryClient = useQueryClient();
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -83,8 +83,9 @@ export default function EmailDetailScreen() {
   useEffect(() => {
     if (email && id) {
       markAsRead(id);
+      queryClient.invalidateQueries({ queryKey: ['emails-local'] });
     }
-  }, [email, id, markAsRead]);
+  }, [email, id, queryClient]);
 
   if (loading) {
     return <ActivityIndicator style={styles.loader} size="large" color="#000000" />;
