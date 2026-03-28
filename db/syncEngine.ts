@@ -43,22 +43,6 @@ async function fetchResendPage(limit: number, after?: string): Promise<ResendLis
   return res.json();
 }
 
-function extractSenderName(from: string): string {
-  const match = from.match(/^(.+?)\s*<.+>$/);
-  return match ? match[1].trim() : from.split('@')[0];
-}
-
-function formatTime(dateStr: string): string {
-  const date = parseDate(dateStr);
-  if (!date) return '';
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  const h = hours % 12 || 12;
-  const m = minutes.toString().padStart(2, '0');
-  return `${h}:${m} ${ampm}`;
-}
-
 function toLocalDateString(date: Date): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -73,17 +57,12 @@ function toDbEmail(resend: ResendEmail): DbEmail {
 
   return {
     id: resend.id,
-    sender: extractSenderName(resend.from),
     from_address: resend.from,
     subject: resend.subject || '(No subject)',
     snippet: '',
-    date_display: formatTime(resend.created_at),
-    created_at: resend.created_at,
     created_date: createdDate,
     created_at_ms: ms,
     is_read: 0,
-    message_id: resend.message_id ?? null,
-    has_attachments: resend.attachments?.length > 0 ? 1 : 0,
   };
 }
 

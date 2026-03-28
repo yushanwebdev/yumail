@@ -18,17 +18,12 @@ function createSchema(db: SQLite.SQLiteDatabase): void {
   db.execSync(`
     CREATE TABLE IF NOT EXISTS emails (
       id              TEXT PRIMARY KEY NOT NULL,
-      sender          TEXT NOT NULL,
       from_address    TEXT NOT NULL,
       subject         TEXT NOT NULL DEFAULT '',
       snippet         TEXT NOT NULL DEFAULT '',
-      date_display    TEXT NOT NULL DEFAULT '',
-      created_at      TEXT NOT NULL,
       created_date    TEXT NOT NULL,
       created_at_ms   INTEGER NOT NULL,
-      is_read         INTEGER NOT NULL DEFAULT 0,
-      message_id      TEXT,
-      has_attachments INTEGER NOT NULL DEFAULT 0
+      is_read         INTEGER NOT NULL DEFAULT 0
     );
 
     CREATE INDEX IF NOT EXISTS idx_emails_date_sort

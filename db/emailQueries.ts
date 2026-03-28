@@ -4,15 +4,27 @@ import type { DbEmail } from './types';
 
 const INSERT_BATCH_SIZE = 100;
 
+function extractSenderName(from: string): string {
+  const match = from.match(/^(.+?)\s*<.+>$/);
+  return match ? match[1].trim() : from.split('@')[0];
+}
+
+function formatTime(ms: number): string {
+  const d = new Date(ms);
+  const h = d.getHours() % 12 || 12;
+  const m = String(d.getMinutes()).padStart(2, '0');
+  const ampm = d.getHours() >= 12 ? 'PM' : 'AM';
+  return `${h}:${m} ${ampm}`;
+}
+
 function toEmail(row: DbEmail): Email {
   return {
     id: row.id,
-    sender: row.sender,
+    sender: extractSenderName(row.from_address),
     from: row.from_address,
     subject: row.subject,
     snippet: row.snippet,
-    date: row.date_display,
-    createdAt: row.created_at,
+    date: formatTime(row.created_at_ms),
     unread: row.is_read === 0,
   };
 }
@@ -25,22 +37,16 @@ export function insertEmails(emails: DbEmail[]): void {
       for (const e of batch) {
         db.runSync(
           `INSERT OR IGNORE INTO emails
-            (id, sender, from_address, subject, snippet, date_display,
-             created_at, created_date, created_at_ms, is_read, message_id, has_attachments)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            (id, from_address, subject, snippet, created_date, created_at_ms, is_read)
+           VALUES (?, ?, ?, ?, ?, ?, ?)`,
           [
             e.id,
-            e.sender,
             e.from_address,
             e.subject,
             e.snippet,
-            e.date_display,
-            e.created_at,
             e.created_date,
             e.created_at_ms,
             e.is_read,
-            e.message_id,
-            e.has_attachments,
           ],
         );
       }
