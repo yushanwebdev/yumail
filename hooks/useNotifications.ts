@@ -9,6 +9,8 @@ import { usePushTokenStore } from '@/stores/usePushTokenStore';
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
   }),
@@ -72,11 +74,10 @@ export function useNotifications() {
     });
 
     // Handle notification tap that launched the app (cold start)
-    Notifications.getLastNotificationResponseAsync().then((response) => {
-      if (response) {
-        handleNotificationResponse(response);
-      }
-    });
+    const lastResponse = Notifications.getLastNotificationResponse();
+    if (lastResponse) {
+      handleNotificationResponse(lastResponse);
+    }
 
     notificationListener.current = Notifications.addNotificationReceivedListener(() => {
       // Notification received while foregrounded — display is handled by setNotificationHandler
@@ -87,12 +88,8 @@ export function useNotifications() {
     );
 
     return () => {
-      if (notificationListener.current) {
-        Notifications.removeNotificationSubscription(notificationListener.current);
-      }
-      if (responseListener.current) {
-        Notifications.removeNotificationSubscription(responseListener.current);
-      }
+      notificationListener.current?.remove();
+      responseListener.current?.remove();
     };
   }, [setExpoPushToken]);
 }
