@@ -6,7 +6,7 @@ let _db: SQLite.SQLiteDatabase | null = null;
 
 export function getDatabase(): SQLite.SQLiteDatabase {
   if (!_db) {
-    _db = SQLite.openDatabaseSync(DB_NAME);
+    _db = SQLite.openDatabaseSync(DB_NAME, { enableChangeListener: true });
     _db.execSync('PRAGMA journal_mode = WAL;');
     _db.execSync('PRAGMA foreign_keys = ON;');
     createSchema(_db);

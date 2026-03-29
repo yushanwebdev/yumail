@@ -14,7 +14,6 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 type EmailRowProps = {
   email: Email;
-  onToggleRead?: () => void;
 };
 
 function extractEmail(from: string): string {
@@ -22,7 +21,7 @@ function extractEmail(from: string): string {
   return match ? match[1] : from;
 }
 
-export function EmailRow({ email, onToggleRead }: EmailRowProps) {
+export function EmailRow({ email }: EmailRowProps) {
   const router = useRouter();
   const isRead = !email.unread;
   const scale = useSharedValue(1);
@@ -68,7 +67,6 @@ export function EmailRow({ email, onToggleRead }: EmailRowProps) {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
           }
           toggleRead(email.id);
-          onToggleRead?.();
         }}
         hitSlop={8}
         style={styles.checkArea}

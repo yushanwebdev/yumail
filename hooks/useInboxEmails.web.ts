@@ -36,6 +36,5 @@ export function useInboxEmails(selectedDate: Date) {
     total: emails.length,
     readCount: emails.filter((e) => !e.unread).length,
     refetch,
-    invalidate: () => {},
   };
 }

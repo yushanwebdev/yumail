@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useReducer, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { addDatabaseChangeListener } from 'expo-sqlite';
 import { getEmailsByDate } from '@/db/emailQueries';
 import { deltaSync } from '@/db/syncEngine';
 
@@ -10,16 +11,20 @@ function toDateString(date: Date): string {
 }
 
 export function useEmailsFromDb(selectedDate: Date) {
-  const [version, bump] = useReducer((n: number) => n + 1, 0);
   const [refreshing, setRefreshing] = useState(false);
   const dateStr = toDateString(selectedDate);
 
-  // Re-reads from SQLite whenever date or version changes
-  const emails = useMemo(
-    () => getEmailsByDate(dateStr),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [dateStr, version],
-  );
+  const [emails, setEmails] = useState(() => getEmailsByDate(dateStr));
+
+  useEffect(() => {
+    setEmails(getEmailsByDate(dateStr));
+    const sub = addDatabaseChangeListener((event) => {
+      if (event.tableName === 'emails') {
+        setEmails(getEmailsByDate(dateStr));
+      }
+    });
+    return () => sub.remove();
+  }, [dateStr]);
 
   const total = emails.length;
   const readCount = useMemo(() => emails.filter((e) => !e.unread).length, [emails]);
@@ -31,7 +36,6 @@ export function useEmailsFromDb(selectedDate: Date) {
     } catch (e) {
       console.warn('Delta sync on refresh failed:', e);
     }
-    bump();
     setRefreshing(false);
   }, []);
 
@@ -42,6 +46,5 @@ export function useEmailsFromDb(selectedDate: Date) {
     total,
     readCount,
     refetch,
-    invalidate: bump,
   };
 }

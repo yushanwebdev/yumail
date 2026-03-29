@@ -6,7 +6,6 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from 'expo-router';
 import { LegendList } from '@legendapp/list';
 import { useInboxEmails } from '@/hooks/useInboxEmails';
 import { colors } from '@/constants/theme';
@@ -37,18 +36,15 @@ function ListHeader({
 
 export default function InboxScreen() {
   const [selectedDate, setSelectedDate] = useState(() => new Date());
-  const { emails, loading, refreshing, total, readCount, refetch, invalidate } =
+  const { emails, loading, refreshing, total, readCount, refetch } =
     useInboxEmails(selectedDate);
-
-  // Re-read from SQLite when returning from detail screen (read status may have changed)
-  useFocusEffect(invalidate);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <LegendList
         data={emails}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <EmailRow email={item} onToggleRead={invalidate} />}
+        renderItem={({ item }) => <EmailRow email={item} />}
         ListHeaderComponent={
           <ListHeader
             selectedDate={selectedDate}
