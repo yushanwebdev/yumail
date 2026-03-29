@@ -3,8 +3,7 @@ import { Platform } from 'react-native';
 import { Redirect, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
-import { QueryClient, QueryClientProvider, useInfiniteQuery } from '@tanstack/react-query';
-import { fetchEmailsPage, type EmailsPage } from '@/hooks/useEmails';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useSyncOnForeground } from '@/hooks/useSyncOnForeground';
 
@@ -24,24 +23,9 @@ function useIsSynced(): boolean {
 }
 
 function SplashGate({ synced }: { synced: boolean }) {
-  // On web (or if already synced on native), wait for first API page before hiding splash
-  const needsApiFetch = Platform.OS === 'web' || !synced;
-
-  const { isFetched: emailsFetched } = useInfiniteQuery<EmailsPage>({
-    queryKey: ['emails'],
-    queryFn: fetchEmailsPage,
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextCursor : undefined),
-    enabled: needsApiFetch,
-  });
-
   useEffect(() => {
-    // If synced on native, hide immediately (data is in SQLite)
-    // If web or not synced, wait for first fetch (or show sync screen)
-    if (!needsApiFetch || emailsFetched) {
-      SplashScreen.hideAsync();
-    }
-  }, [needsApiFetch, emailsFetched]);
+    SplashScreen.hideAsync();
+  }, [synced]);
 
   return null;
 }

@@ -4,7 +4,7 @@ import { useSync } from '@/hooks/useSync';
 import { colors, fonts, spacing } from '@/constants/theme';
 
 export default function SyncScreen() {
-  const { progress, retry } = useSync();
+  const { phase, emailsFetched, error, retry } = useSync();
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -13,9 +13,9 @@ export default function SyncScreen() {
         <Text style={styles.subtitle}>Setting up your inbox</Text>
 
         <View style={styles.statusContainer}>
-          {progress.phase === 'error' ? (
+          {phase === 'error' ? (
             <>
-              <Text style={styles.errorText}>{progress.error ?? 'Something went wrong'}</Text>
+              <Text style={styles.errorText}>{error ?? 'Something went wrong'}</Text>
               <Pressable style={styles.retryButton} onPress={retry}>
                 <Text style={styles.retryText}>Retry</Text>
               </Pressable>
@@ -24,9 +24,9 @@ export default function SyncScreen() {
             <>
               <ActivityIndicator size="small" color={colors.inkPrimary} />
               <Text style={styles.progressText}>
-                {progress.phase === 'migrating'
+                {phase === 'migrating'
                   ? 'Finishing up…'
-                  : `Syncing emails… ${progress.emailsFetched} fetched`}
+                  : `Syncing emails… ${emailsFetched} fetched`}
               </Text>
             </>
           )}

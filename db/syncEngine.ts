@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { parseDate } from '@/hooks/useEmails';
+import type { EmailsPage } from '@/hooks/useEmails';
 import { insertEmails, emailExists, getSyncMeta, setSyncMeta } from './emailQueries';
+import { getDatabase } from './database';
 import type { DbEmail } from './types';
 
 const PAGE_SIZE = 20;
@@ -26,13 +28,6 @@ type ResendListResponse = {
   data: ResendEmail[];
 };
 
-export type SyncProgress = {
-  phase: 'fetching' | 'migrating' | 'complete' | 'error';
-  emailsFetched: number;
-  pagesProcessed: number;
-  error?: string;
-};
-
 async function fetchResendPage(limit: number, after?: string): Promise<ResendListResponse> {
   const params = new URLSearchParams({ limit: String(limit) });
   if (after) params.set('after', after);
@@ -50,15 +45,15 @@ function toLocalDateString(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
-function toDbEmail(resend: ResendEmail): DbEmail {
-  const parsed = parseDate(resend.created_at);
+function toDbEmail(email: { id: string; from: string; subject: string; createdAt?: string }): DbEmail {
+  const parsed = email.createdAt ? parseDate(email.createdAt) : null;
   const ms = parsed ? parsed.getTime() : 0;
   const createdDate = parsed ? toLocalDateString(parsed) : '1970-01-01';
 
   return {
-    id: resend.id,
-    from_address: resend.from,
-    subject: resend.subject || '(No subject)',
+    id: email.id,
+    from_address: email.from,
+    subject: email.subject || '(No subject)',
     snippet: '',
     created_date: createdDate,
     created_at_ms: ms,
@@ -66,58 +61,27 @@ function toDbEmail(resend: ResendEmail): DbEmail {
   };
 }
 
-export async function initialSync(
-  onProgress: (progress: SyncProgress) => void,
-): Promise<void> {
-  let cursor = getSyncMeta('last_sync_cursor') ?? undefined;
-  let totalFetched = 0;
-  let pagesProcessed = 0;
-
-  // Count emails already inserted from a previous partial sync
-  const existingCursor = getSyncMeta('last_sync_cursor');
-  if (existingCursor) {
-    const countMeta = getSyncMeta('partial_sync_count');
-    totalFetched = countMeta ? parseInt(countMeta, 10) : 0;
-  }
-
-  while (true) {
-    const response = await fetchResendPage(PAGE_SIZE, cursor);
-    const dbEmails = (response.data ?? []).map(toDbEmail);
-    if (dbEmails.length > 0) {
-      insertEmails(dbEmails);
-    }
-
-    totalFetched += dbEmails.length;
-    pagesProcessed += 1;
-    onProgress({ phase: 'fetching', emailsFetched: totalFetched, pagesProcessed });
-
-    if (!response.has_more || dbEmails.length === 0) break;
-
-    cursor = response.data[response.data.length - 1].id;
-    setSyncMeta('last_sync_cursor', cursor);
-    setSyncMeta('partial_sync_count', String(totalFetched));
-  }
-
-  // Store newest email timestamp for delta sync
-  if (totalFetched > 0) {
-    const firstPageResponse = await fetchResendPage(1);
-    if (firstPageResponse.data?.length > 0) {
-      setSyncMeta('newest_email_id', firstPageResponse.data[0].id);
-    }
-  }
-
-  // Migrate read status from AsyncStorage
-  onProgress({ phase: 'migrating', emailsFetched: totalFetched, pagesProcessed });
-  await migrateReadStatus();
-
-  // Mark sync complete and clean up partial tracking
-  setSyncMeta('initial_sync_complete', 'true');
-  setSyncMeta('last_sync_cursor', '');
-  setSyncMeta('partial_sync_count', '');
-
-  onProgress({ phase: 'complete', emailsFetched: totalFetched, pagesProcessed });
+/**
+ * Called by useSync for each page fetched via React Query.
+ * Stores the page's emails into SQLite.
+ */
+export function storePageToDb(page: EmailsPage): void {
+  if (page.emails.length === 0) return;
+  const dbEmails = page.emails.map(toDbEmail);
+  insertEmails(dbEmails);
 }
 
+/**
+ * Called after all pages have been fetched and stored.
+ * Marks the initial sync as complete.
+ */
+export function finishSync(): void {
+  setSyncMeta('initial_sync_complete', 'true');
+}
+
+/**
+ * Delta sync: fetch newest emails from the API until we hit one already in the DB.
+ */
 export async function deltaSync(): Promise<number> {
   let inserted = 0;
   let cursor: string | undefined;
@@ -134,7 +98,18 @@ export async function deltaSync(): Promise<number> {
         hitExisting = true;
         break;
       }
-      newEmails.push(toDbEmail(resend));
+      const parsed = parseDate(resend.created_at);
+      const ms = parsed ? parsed.getTime() : 0;
+      const createdDate = parsed ? toLocalDateString(parsed) : '1970-01-01';
+      newEmails.push({
+        id: resend.id,
+        from_address: resend.from,
+        subject: resend.subject || '(No subject)',
+        snippet: '',
+        created_date: createdDate,
+        created_at_ms: ms,
+        is_read: 0,
+      });
     }
 
     if (newEmails.length > 0) {
@@ -146,17 +121,13 @@ export async function deltaSync(): Promise<number> {
     cursor = response.data[response.data.length - 1].id;
   }
 
-  if (inserted > 0) {
-    const newest = await fetchResendPage(1);
-    if (newest.data?.length > 0) {
-      setSyncMeta('newest_email_id', newest.data[0].id);
-    }
-  }
-
   return inserted;
 }
 
-async function migrateReadStatus(): Promise<void> {
+/**
+ * One-time migration of read status from AsyncStorage to SQLite.
+ */
+export async function migrateReadStatus(): Promise<void> {
   try {
     const raw = await AsyncStorage.getItem('read-status');
     if (!raw) return;
@@ -165,7 +136,6 @@ async function migrateReadStatus(): Promise<void> {
     const readIds: string[] = parsed?.state?.readIds ?? [];
     if (readIds.length === 0) return;
 
-    const { getDatabase } = await import('./database');
     const db = getDatabase();
     db.withTransactionSync(() => {
       for (const id of readIds) {
