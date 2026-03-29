@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, fonts, radii } from '@/constants/theme';
 
 type ProgressHeaderProps = {
@@ -7,6 +7,11 @@ type ProgressHeaderProps = {
 };
 
 export function ProgressHeader({ readCount, totalCount }: ProgressHeaderProps) {
+  const handleMenuPress = () => {
+    if (Platform.OS === 'web') return;
+    const { exportDatabase } = require('@/hooks/useExportDatabase') as typeof import('@/hooks/useExportDatabase');
+    exportDatabase();
+  };
 
   return (
     <View style={styles.container}>
@@ -17,7 +22,7 @@ export function ProgressHeader({ readCount, totalCount }: ProgressHeaderProps) {
         </Text>
       </View>
       <View style={styles.actions}>
-        <Pressable style={styles.iconButton}>
+        <Pressable style={styles.iconButton} onPress={handleMenuPress}>
           <Text style={styles.iconText}>···</Text>
         </Pressable>
       </View>

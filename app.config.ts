@@ -61,6 +61,8 @@ export default ({ config }: ConfigContext) => ({
         ],
       },
     ],
+    "expo-sqlite",
+    "expo-sharing",
     "expo-image",
     "expo-web-browser",
     [

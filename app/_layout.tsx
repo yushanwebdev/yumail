@@ -1,40 +1,35 @@
 import { useEffect } from 'react';
-import { Stack } from 'expo-router';
+import { Redirect, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
-import { QueryClient, QueryClientProvider, useInfiniteQuery } from '@tanstack/react-query';
-import { fetchEmailsPage, type EmailsPage } from '@/hooks/useEmails';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { getSyncMeta } from '@/db/emailQueries';
 import { useNotifications } from '@/hooks/useNotifications';
 
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
-function SplashGate() {
-  const { isFetched: emailsFetched } = useInfiniteQuery<EmailsPage>({
-    queryKey: ['emails'],
-    queryFn: fetchEmailsPage,
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextCursor : undefined),
-  });
-
+function SplashGate({ synced }: { synced: boolean }) {
   useEffect(() => {
-    if (emailsFetched) {
-      SplashScreen.hideAsync();
-    }
-  }, [emailsFetched]);
+    SplashScreen.hideAsync();
+  }, [synced]);
 
   return null;
 }
 
 function RootLayoutInner() {
+  const synced = getSyncMeta('initial_sync_complete') === 'true';
+
   useNotifications();
 
   return (
     <>
       <StatusBar style="dark" />
-      <SplashGate />
+      <SplashGate synced={synced} />
+      {!synced && <Redirect href="/sync" />}
       <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="sync" options={{ gestureEnabled: false }} />
         <Stack.Screen name="index" />
         <Stack.Screen
           name="email/[id]"

@@ -7,7 +7,7 @@ import Animated, {
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { colors, fonts, radii } from '@/constants/theme';
-import { useReadStatusStore } from '@/stores/useReadStatusStore';
+import { toggleRead } from '@/db/emailQueries';
 import type { Email } from '@/constants/emails';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -23,8 +23,7 @@ function extractEmail(from: string): string {
 
 export function EmailRow({ email }: EmailRowProps) {
   const router = useRouter();
-  const isRead = useReadStatusStore((s) => s.readIds.includes(email.id));
-  const toggleRead = useReadStatusStore((s) => s.toggleRead);
+  const isRead = !email.unread;
   const scale = useSharedValue(1);
 
   const fullEmail = extractEmail(email.from);
