@@ -5,6 +5,9 @@ import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { usePushTokenStore } from '@/stores/usePushTokenStore';
+import { insertEmails } from '@/db/emailQueries';
+import { parseDate } from '@/api/resend';
+import { toLocalDateString } from '@/db/syncEngine';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -51,7 +54,19 @@ async function registerForPushNotifications(): Promise<string | null> {
   }
 
   const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
-  return tokenData.data;
+  const token = tokenData.data;
+
+  // Register push token with the Cloudflare Worker
+  const workerUrl = process.env.EXPO_PUBLIC_WORKER_URL;
+  if (workerUrl) {
+    fetch(`${workerUrl}/api/push-token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    }).catch((err) => console.warn('Failed to register push token with server:', err));
+  }
+
+  return token;
 }
 
 function handleNotificationResponse(response: Notifications.NotificationResponse) {
@@ -84,8 +99,22 @@ export function useNotifications() {
       handleNotificationResponse(lastResponse);
     }
 
-    notificationListener.current = Notifications.addNotificationReceivedListener(() => {
-      // Notification received while foregrounded — display is handled by setNotificationHandler
+    notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
+      const data = notification.request.content.data;
+      if (data?.emailId && typeof data.emailId === 'string') {
+        const parsed = data.createdAt ? parseDate(data.createdAt as string) : null;
+        const ms = parsed ? parsed.getTime() : Date.now();
+        const createdDate = parsed ? toLocalDateString(parsed) : toLocalDateString(new Date());
+        insertEmails([{
+          id: data.emailId,
+          from_address: (data.from as string) || '',
+          subject: (data.subject as string) || '(No subject)',
+          snippet: '',
+          created_date: createdDate,
+          created_at_ms: ms,
+          is_read: 0,
+        }]);
+      }
     });
 
     responseListener.current = Notifications.addNotificationResponseReceivedListener(
