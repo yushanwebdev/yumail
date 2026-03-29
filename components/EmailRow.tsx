@@ -7,7 +7,7 @@ import Animated, {
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { colors, fonts, radii } from '@/constants/theme';
-import { toggleRead } from '@/stores/useReadStatusStore';
+import { toggleRead } from '@/db/emailQueries';
 import type { Email } from '@/constants/emails';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);

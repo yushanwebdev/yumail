@@ -1,5 +1,5 @@
 import { useEmailDetail } from '@/hooks/useEmailDetail';
-import { markAsRead } from '@/stores/useReadStatusStore';
+import { markAsRead } from '@/db/emailQueries';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { useEffect, useLayoutEffect, useState } from 'react';
 import {
