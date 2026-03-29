@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { parseDate } from '@/hooks/useEmails';
-import type { EmailsPage } from '@/hooks/useEmails';
+import { parseDate } from '@/api/resend';
+import type { EmailsPage } from '@/api/resend';
 import { insertEmails, emailExists, getSyncMeta, setSyncMeta } from './emailQueries';
 import { getDatabase } from './database';
 import type { DbEmail } from './types';

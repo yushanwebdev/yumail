@@ -1,26 +1,15 @@
 import { useEffect } from 'react';
-import { Platform } from 'react-native';
 import { Redirect, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { getSyncMeta } from '@/db/emailQueries';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useSyncOnForeground } from '@/hooks/useSyncOnForeground';
 
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
-
-/**
- * On native: check SQLite sync status synchronously.
- * On web: SQLite is not available, skip sync screen.
- */
-function useIsSynced(): boolean {
-  if (Platform.OS === 'web') return true;
-  // Dynamic require so web bundle doesn't pull in expo-sqlite
-  const { getSyncMeta } = require('@/db/emailQueries') as typeof import('@/db/emailQueries');
-  return getSyncMeta('initial_sync_complete') === 'true';
-}
 
 function SplashGate({ synced }: { synced: boolean }) {
   useEffect(() => {
@@ -31,13 +20,10 @@ function SplashGate({ synced }: { synced: boolean }) {
 }
 
 function RootLayoutInner() {
-  const synced = useIsSynced();
+  const synced = getSyncMeta('initial_sync_complete') === 'true';
 
   useNotifications();
-  if (Platform.OS !== 'web') {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    useSyncOnForeground();
-  }
+  useSyncOnForeground();
 
   return (
     <>

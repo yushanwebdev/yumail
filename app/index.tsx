@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LegendList } from '@legendapp/list';
-import { useInboxEmails } from '@/hooks/useInboxEmails';
+import { useEmailsFromDb } from '@/hooks/useEmailsFromDb';
 import { colors } from '@/constants/theme';
 import { EmailRow } from '@/components/EmailRow';
 import { ProgressHeader } from '@/components/ProgressHeader';
@@ -37,7 +37,7 @@ function ListHeader({
 export default function InboxScreen() {
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const { emails, loading, refreshing, total, readCount, refetch } =
-    useInboxEmails(selectedDate);
+    useEmailsFromDb(selectedDate);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>

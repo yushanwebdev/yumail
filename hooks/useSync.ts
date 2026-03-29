@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchEmailsPage, type EmailsPage } from '@/hooks/useEmails';
+import { fetchEmailsPage, type EmailsPage } from '@/api/resend';
 import { storePageToDb, finishSync, migrateReadStatus } from '@/db/syncEngine';
 
 type SyncPhase = 'fetching' | 'migrating' | 'complete' | 'error';
