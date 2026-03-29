@@ -5,4 +5,4 @@ compatibility_flags = ["nodejs_compat"]
 
 [[kv_namespaces]]
 binding = "PUSH_TOKENS"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+id = "16cc47cad9504be4bfd4c9d6572add36"
