@@ -5,7 +5,6 @@ import * as SplashScreen from 'expo-splash-screen';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { getSyncMeta } from '@/db/emailQueries';
 import { useNotifications } from '@/hooks/useNotifications';
-import { useSyncOnForeground } from '@/hooks/useSyncOnForeground';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -23,7 +22,6 @@ function RootLayoutInner() {
   const synced = getSyncMeta('initial_sync_complete') === 'true';
 
   useNotifications();
-  useSyncOnForeground();
 
   return (
     <>
