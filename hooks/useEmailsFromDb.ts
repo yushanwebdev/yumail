@@ -1,5 +1,4 @@
-import { useMemo } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useMemo, useReducer, useState } from 'react';
 import { getEmailsByDate } from '@/db/emailQueries';
 import { deltaSync } from '@/db/syncEngine';
 
@@ -11,42 +10,38 @@ function toDateString(date: Date): string {
 }
 
 export function useEmailsFromDb(selectedDate: Date) {
-  const queryClient = useQueryClient();
+  const [version, bump] = useReducer((n: number) => n + 1, 0);
+  const [refreshing, setRefreshing] = useState(false);
   const dateStr = toDateString(selectedDate);
 
-  const { data: emails = [], isLoading: loading, isRefetching: refreshing, refetch } = useQuery({
-    queryKey: ['emails-local', dateStr],
-    queryFn: () => getEmailsByDate(dateStr),
-    staleTime: Infinity,
-  });
-
-  const { total, readCount } = useMemo(
-    () => ({
-      total: emails.length,
-      readCount: emails.filter((e) => !e.unread).length,
-    }),
-    [emails],
+  // Re-reads from SQLite whenever date or version changes
+  const emails = useMemo(
+    () => getEmailsByDate(dateStr),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [dateStr, version],
   );
 
-  const handleRefresh = async () => {
+  const total = emails.length;
+  const readCount = useMemo(() => emails.filter((e) => !e.unread).length, [emails]);
+
+  const refetch = useCallback(async () => {
+    setRefreshing(true);
     try {
-      const newCount = await deltaSync();
-      if (newCount > 0) {
-        queryClient.invalidateQueries({ queryKey: ['emails-local'] });
-      }
+      await deltaSync();
     } catch (e) {
       console.warn('Delta sync on refresh failed:', e);
     }
-    refetch();
-  };
+    bump();
+    setRefreshing(false);
+  }, []);
 
   return {
     emails,
-    loading,
+    loading: false,
     refreshing,
     total,
     readCount,
-    refetch: handleRefresh,
-    invalidate: () => queryClient.invalidateQueries({ queryKey: ['emails-local'] }),
+    refetch,
+    invalidate: bump,
   };
 }

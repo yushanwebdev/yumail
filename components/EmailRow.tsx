@@ -5,7 +5,6 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
-import { useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
 import { colors, fonts, radii } from '@/constants/theme';
 import { toggleRead } from '@/stores/useReadStatusStore';
@@ -15,6 +14,7 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 type EmailRowProps = {
   email: Email;
+  onToggleRead?: () => void;
 };
 
 function extractEmail(from: string): string {
@@ -22,9 +22,8 @@ function extractEmail(from: string): string {
   return match ? match[1] : from;
 }
 
-export function EmailRow({ email }: EmailRowProps) {
+export function EmailRow({ email, onToggleRead }: EmailRowProps) {
   const router = useRouter();
-  const queryClient = useQueryClient();
   const isRead = !email.unread;
   const scale = useSharedValue(1);
 
@@ -69,7 +68,7 @@ export function EmailRow({ email }: EmailRowProps) {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
           }
           toggleRead(email.id);
-          queryClient.invalidateQueries({ queryKey: ['emails-local'] });
+          onToggleRead?.();
         }}
         hitSlop={8}
         style={styles.checkArea}
