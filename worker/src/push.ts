@@ -1,6 +1,5 @@
+import Expo from 'expo-server-sdk';
 import type { EmailReceivedEvent, Env } from './types';
-
-const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send';
 
 function parseSenderName(from: string): string {
   const match = from.match(/^(.+?)\s*<.+>$/);
@@ -17,13 +16,17 @@ export async function sendPushNotification(
     return;
   }
 
+  if (!Expo.isExpoPushToken(token)) {
+    console.error('Invalid Expo push token:', token);
+    return;
+  }
+
+  const expo = new Expo({ accessToken: env.EXPO_ACCESS_TOKEN });
   const { email_id, from, subject, created_at } = event.data;
   const senderName = parseSenderName(from);
 
-  const response = await fetch(EXPO_PUSH_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
+  const tickets = await expo.sendPushNotificationsAsync([
+    {
       to: token,
       title: senderName,
       body: subject || '(No subject)',
@@ -35,10 +38,11 @@ export async function sendPushNotification(
       },
       sound: 'default',
       channelId: 'emails',
-    }),
-  });
+    },
+  ]);
 
-  if (!response.ok) {
-    console.error('Failed to send push notification:', await response.text());
+  const ticket = tickets[0];
+  if (ticket.status === 'error') {
+    console.error('Push notification error:', ticket.message, ticket.details);
   }
 }
