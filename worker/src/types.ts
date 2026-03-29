@@ -1,6 +1,7 @@
 export type Env = {
   PUSH_TOKENS: KVNamespace;
   RESEND_WEBHOOK_SECRET: string;
+  APP_API_KEY: string;
 };
 
 export type EmailReceivedEvent = {

@@ -58,10 +58,14 @@ async function registerForPushNotifications(): Promise<string | null> {
 
   // Register push token with the Cloudflare Worker
   const workerUrl = process.env.EXPO_PUBLIC_WORKER_URL;
+  const workerApiKey = Constants.expoConfig?.extra?.workerApiKey;
   if (workerUrl) {
     fetch(`${workerUrl}/api/push-token`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(workerApiKey && { Authorization: `Bearer ${workerApiKey}` }),
+      },
       body: JSON.stringify({ token }),
     }).catch((err) => console.warn('Failed to register push token with server:', err));
   }
