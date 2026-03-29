@@ -5,7 +5,7 @@ const EXPO_PUSH_TOKEN_BRACKET_RE = /^(ExponentPushToken|ExpoPushToken)\[.+\]$/;
 const EXPO_PUSH_TOKEN_UUID_RE =
   /^[a-z\d]{8}-[a-z\d]{4}-[a-z\d]{4}-[a-z\d]{4}-[a-z\d]{12}$/i;
 
-function isExpoPushToken(token: string): boolean {
+export function isExpoPushToken(token: string): boolean {
   return EXPO_PUSH_TOKEN_BRACKET_RE.test(token) || EXPO_PUSH_TOKEN_UUID_RE.test(token);
 }
 

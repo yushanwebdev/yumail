@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { bearerAuth } from 'hono/bearer-auth';
 import type { Env } from './types';
 import { verifyWebhook, WebhookError } from './webhooks';
-import { sendPushNotification } from './push';
+import { sendPushNotification, isExpoPushToken } from './push';
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -13,7 +13,7 @@ app.post(
   async (c) => {
     const body = await c.req.json<{ token?: string }>();
 
-    if (!body.token || !body.token.startsWith('ExponentPushToken[')) {
+    if (!body.token || !isExpoPushToken(body.token)) {
       return c.json({ error: 'Invalid Expo push token' }, 400);
     }
 
