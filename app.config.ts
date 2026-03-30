@@ -78,6 +78,7 @@ export default ({ config }: ConfigContext) => ({
     eas: {
       projectId: process.env.EAS_PROJECT_ID,
     },
+    workerApiKey: process.env.WORKER_API_KEY,
     router: {},
   },
   experiments: {
