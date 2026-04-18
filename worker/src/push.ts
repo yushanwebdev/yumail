@@ -52,6 +52,7 @@ export async function sendPushNotification(
       },
       sound: 'default',
       channelId: 'emails',
+      _contentAvailable: true,
     }),
   });
 

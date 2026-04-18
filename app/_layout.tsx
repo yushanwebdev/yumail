@@ -5,6 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { getSyncMeta } from '@/db/emailQueries';
 import { useNotifications } from '@/hooks/useNotifications';
+import '@/tasks/backgroundNotification';
 
 SplashScreen.preventAutoHideAsync();
 

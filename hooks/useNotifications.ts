@@ -5,9 +5,8 @@ import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { usePushTokenStore } from '@/stores/usePushTokenStore';
-import { insertEmails } from '@/db/emailQueries';
-import { parseDate } from '@/api/resend';
-import { toLocalDateString } from '@/db/syncEngine';
+import { persistNotificationEmail } from '@/db/persistNotificationEmail';
+import { BACKGROUND_NOTIFICATION_TASK } from '@/tasks/backgroundNotification';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -83,26 +82,6 @@ async function registerForPushNotifications(): Promise<string | null> {
   return token;
 }
 
-function persistNotificationEmail(
-  data: Notifications.NotificationRequest['content']['data'],
-) {
-  if (!data?.emailId || typeof data.emailId !== 'string') return;
-  const parsed = data.createdAt ? parseDate(data.createdAt as string) : null;
-  const ms = parsed ? parsed.getTime() : Date.now();
-  const createdDate = parsed ? toLocalDateString(parsed) : toLocalDateString(new Date());
-  insertEmails([
-    {
-      id: data.emailId,
-      from_address: (data.from as string) || '',
-      subject: (data.subject as string) || '(No subject)',
-      snippet: '',
-      created_date: createdDate,
-      created_at_ms: ms,
-      is_read: 0,
-    },
-  ]);
-}
-
 function handleNotificationResponse(response: Notifications.NotificationResponse) {
   const data = response.notification.request.content.data;
   persistNotificationEmail(data);
@@ -127,6 +106,10 @@ export function useNotifications() {
       .catch((error) => {
         console.error('Failed to register for push notifications:', error);
       });
+
+    Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK).catch((error) => {
+      console.warn('Failed to register background notification task:', error);
+    });
 
     // Handle notification tap that launched the app (cold start)
     const lastResponse = Notifications.getLastNotificationResponse();
