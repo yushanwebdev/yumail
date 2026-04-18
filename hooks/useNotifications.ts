@@ -60,14 +60,24 @@ async function registerForPushNotifications(): Promise<string | null> {
   const workerUrl = process.env.EXPO_PUBLIC_WORKER_URL;
   const workerApiKey = Constants.expoConfig?.extra?.workerApiKey;
   if (workerUrl) {
-    fetch(`${workerUrl}/api/push-token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(workerApiKey && { Authorization: `Bearer ${workerApiKey}` }),
-      },
-      body: JSON.stringify({ token }),
-    }).catch((err) => console.warn('Failed to register push token with server:', err));
+    try {
+      const response = await fetch(`${workerUrl}/api/push-token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(workerApiKey && { Authorization: `Bearer ${workerApiKey}` }),
+        },
+        body: JSON.stringify({ token }),
+      });
+      if (!response.ok) {
+        const body = await response.text().catch(() => '');
+        console.warn(
+          `Failed to register push token with server: ${response.status} ${response.statusText}${body ? ` — ${body}` : ''}`,
+        );
+      }
+    } catch (err) {
+      console.warn('Failed to register push token with server:', err);
+    }
   }
 
   return token;
