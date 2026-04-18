@@ -83,8 +83,29 @@ async function registerForPushNotifications(): Promise<string | null> {
   return token;
 }
 
+function persistNotificationEmail(
+  data: Notifications.NotificationRequest['content']['data'],
+) {
+  if (!data?.emailId || typeof data.emailId !== 'string') return;
+  const parsed = data.createdAt ? parseDate(data.createdAt as string) : null;
+  const ms = parsed ? parsed.getTime() : Date.now();
+  const createdDate = parsed ? toLocalDateString(parsed) : toLocalDateString(new Date());
+  insertEmails([
+    {
+      id: data.emailId,
+      from_address: (data.from as string) || '',
+      subject: (data.subject as string) || '(No subject)',
+      snippet: '',
+      created_date: createdDate,
+      created_at_ms: ms,
+      is_read: 0,
+    },
+  ]);
+}
+
 function handleNotificationResponse(response: Notifications.NotificationResponse) {
   const data = response.notification.request.content.data;
+  persistNotificationEmail(data);
   if (data?.emailId && typeof data.emailId === 'string') {
     const safeId = encodeURIComponent(data.emailId);
     router.push(`/email/${safeId}`);
@@ -114,21 +135,7 @@ export function useNotifications() {
     }
 
     notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
-      const data = notification.request.content.data;
-      if (data?.emailId && typeof data.emailId === 'string') {
-        const parsed = data.createdAt ? parseDate(data.createdAt as string) : null;
-        const ms = parsed ? parsed.getTime() : Date.now();
-        const createdDate = parsed ? toLocalDateString(parsed) : toLocalDateString(new Date());
-        insertEmails([{
-          id: data.emailId,
-          from_address: (data.from as string) || '',
-          subject: (data.subject as string) || '(No subject)',
-          snippet: '',
-          created_date: createdDate,
-          created_at_ms: ms,
-          is_read: 0,
-        }]);
-      }
+      persistNotificationEmail(notification.request.content.data);
     });
 
     responseListener.current = Notifications.addNotificationResponseReceivedListener(
