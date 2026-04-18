@@ -25,7 +25,7 @@ export async function sendPushNotification(
   }
 
   if (!isExpoPushToken(token)) {
-    console.error('Invalid Expo push token:', token);
+    console.error('Invalid Expo push token');
     return;
   }
 
