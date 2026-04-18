@@ -11,7 +11,12 @@ app.post(
   (c, next) =>
     bearerAuth({ verifyToken: (token) => token === c.env.APP_API_KEY })(c, next),
   async (c) => {
-    const body = await c.req.json<{ token?: string }>();
+    let body: { token?: string };
+    try {
+      body = await c.req.json<{ token?: string }>();
+    } catch {
+      return c.json({ error: 'Invalid JSON' }, 400);
+    }
 
     if (!body.token || !isExpoPushToken(body.token)) {
       return c.json({ error: 'Invalid Expo push token' }, 400);
