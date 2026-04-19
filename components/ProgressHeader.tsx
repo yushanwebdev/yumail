@@ -7,9 +7,9 @@ type ProgressHeaderProps = {
 };
 
 export function ProgressHeader({ readCount, totalCount }: ProgressHeaderProps) {
-  const handleMenuPress = () => {
+  const handleMenuPress = async () => {
     if (Platform.OS === 'web') return;
-    const { exportDatabase } = require('@/hooks/useExportDatabase') as typeof import('@/hooks/useExportDatabase');
+    const { exportDatabase } = await import('@/hooks/useExportDatabase');
     exportDatabase();
   };
 
