@@ -7,7 +7,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "hono": "^4.7.0",
+    "hono": "^4.12.14",
     "svix": "^1.60.0"
   },
   "devDependencies": {
