@@ -1,3 +1,4 @@
+import { AppState, AppStateStatus } from "react-native";
 import { getEmailsByDate } from "@/db/emailQueries";
 import { deltaSync } from "@/db/syncEngine";
 import { addDatabaseChangeListener } from "expo-sqlite";
@@ -30,6 +31,21 @@ export function useEmailsFromDb(selectedDate: Date) {
     });
     return () => sub.remove();
   }, [dateStr]);
+
+  useEffect(() => {
+    const handleAppStateChange = async (nextState: AppStateStatus) => {
+      if (nextState === "active") {
+        try {
+          await deltaSync();
+        } catch (e) {
+          console.warn("Foreground delta sync failed:", e);
+        }
+      }
+    };
+
+    const subscription = AppState.addEventListener("change", handleAppStateChange);
+    return () => subscription.remove();
+  }, []);
 
   const total = emails.length;
   const readCount = useMemo(
