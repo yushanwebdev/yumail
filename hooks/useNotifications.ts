@@ -5,6 +5,8 @@ import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { usePushTokenStore } from '@/stores/usePushTokenStore';
+import { persistNotificationEmail } from '@/db/persistNotificationEmail';
+import { BACKGROUND_NOTIFICATION_TASK } from '@/tasks/backgroundNotification';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -51,11 +53,38 @@ async function registerForPushNotifications(): Promise<string | null> {
   }
 
   const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
-  return tokenData.data;
+  const token = tokenData.data;
+
+  // Register push token with the Cloudflare Worker
+  const workerUrl = process.env.EXPO_PUBLIC_WORKER_URL;
+  const workerApiKey = Constants.expoConfig?.extra?.workerApiKey;
+  if (workerUrl) {
+    try {
+      const response = await fetch(`${workerUrl}/api/push-token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(workerApiKey && { Authorization: `Bearer ${workerApiKey}` }),
+        },
+        body: JSON.stringify({ token }),
+      });
+      if (!response.ok) {
+        const body = await response.text().catch(() => '');
+        console.warn(
+          `Failed to register push token with server: ${response.status} ${response.statusText}${body ? ` — ${body}` : ''}`,
+        );
+      }
+    } catch (err) {
+      console.warn('Failed to register push token with server:', err);
+    }
+  }
+
+  return token;
 }
 
 function handleNotificationResponse(response: Notifications.NotificationResponse) {
   const data = response.notification.request.content.data;
+  persistNotificationEmail(data);
   if (data?.emailId && typeof data.emailId === 'string') {
     const safeId = encodeURIComponent(data.emailId);
     router.push(`/email/${safeId}`);
@@ -78,14 +107,18 @@ export function useNotifications() {
         console.error('Failed to register for push notifications:', error);
       });
 
+    Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK).catch((error) => {
+      console.warn('Failed to register background notification task:', error);
+    });
+
     // Handle notification tap that launched the app (cold start)
     const lastResponse = Notifications.getLastNotificationResponse();
     if (lastResponse) {
       handleNotificationResponse(lastResponse);
     }
 
-    notificationListener.current = Notifications.addNotificationReceivedListener(() => {
-      // Notification received while foregrounded — display is handled by setNotificationHandler
+    notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
+      persistNotificationEmail(notification.request.content.data);
     });
 
     responseListener.current = Notifications.addNotificationResponseReceivedListener(

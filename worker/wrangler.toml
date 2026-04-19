@@ -1,0 +1,8 @@
+name = "yumail-worker"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[kv_namespaces]]
+binding = "PUSH_TOKENS"
+id = "16cc47cad9504be4bfd4c9d6572add36"
