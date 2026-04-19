@@ -20,6 +20,7 @@ No test framework is configured.
 **Routing:** Expo Router with file-based routing (`app/` directory). Two screens: inbox list (`app/index.tsx`) and email detail (`app/email/[id].tsx`). Stack navigator with headers hidden on the inbox screen.
 
 **Data fetching:** React Query (`@tanstack/react-query`). The `QueryClientProvider` wraps the app in `app/_layout.tsx`. Two query hooks:
+
 - `useEmails` (`hooks/useEmails.ts`) — infinite query that paginates through the Resend API, auto-fetching pages until the selected date is covered
 - `useEmailDetail` (`hooks/useEmailDetail.ts`) — single email detail query
 
@@ -45,3 +46,4 @@ No test framework is configured.
 - Typed routes enabled (`experiments.typedRoutes` in app.json)
 - Package manager: Bun (bun.lock present)
 - Always refer to the Expo documentation (docs.expo.dev) when integrating any Expo package for configuration requirements
+- Create meaningful modular commits
