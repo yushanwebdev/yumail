@@ -6,7 +6,6 @@ import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { usePushTokenStore } from '@/stores/usePushTokenStore';
 import { persistNotificationEmail } from '@/db/persistNotificationEmail';
-import { BACKGROUND_NOTIFICATION_TASK } from '@/tasks/backgroundNotification';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -106,10 +105,6 @@ export function useNotifications() {
       .catch((error) => {
         console.error('Failed to register for push notifications:', error);
       });
-
-    Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK).catch((error) => {
-      console.warn('Failed to register background notification task:', error);
-    });
 
     // Handle notification tap that launched the app (cold start)
     const lastResponse = Notifications.getLastNotificationResponse();
