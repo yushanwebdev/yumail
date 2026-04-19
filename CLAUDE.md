@@ -44,3 +44,4 @@ No test framework is configured.
 - TypeScript strict mode
 - Typed routes enabled (`experiments.typedRoutes` in app.json)
 - Package manager: Bun (bun.lock present)
+- Always refer to the Expo documentation (docs.expo.dev) when integrating any Expo package for configuration requirements
